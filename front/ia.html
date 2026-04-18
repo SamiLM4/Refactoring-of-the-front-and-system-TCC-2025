@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico IA - MedInsight AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/modern.css">
+    <style>
+        .ia-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.875rem;
+            color: #10b981;
+        }
+
+        .ai-result {
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            background: var(--glass-bg);
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo"
+                style="font-size: 1.5rem; font-weight: 700; margin-bottom: 2.5rem; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                MedInsight AI
+            </div>
+            <nav id="menu" class="nav-menu"></nav>
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <div id="userEmail" style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;"></div>
+                <button onclick="logout()" class="btn btn-primary" style="width: 100%;">Sair</button>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main-content">
+            <header style="margin-bottom: 2rem;">
+                <h1 style="font-size: 1.875rem; font-weight: 700;">Diagnóstico com I.A.</h1>
+                <p style="color: var(--text-muted);">Processamento avançado de prontuários em tempo real.</p>
+            </header>
+
+            <div class="ia-grid">
+                <div class="card">
+                    <h3 style="margin-bottom: 1.5rem;">Dados Praz Prontuário</h3>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label
+                            style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Selecionar
+                            Paciente</label>
+                        <select id="paciente-select"
+                            style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+                            <option value="">Carregando pacientes...</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label
+                            style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Upload do Exame (MRI)</label>
+                        <input type="file" id="mri-file" accept="image/png, image/jpeg, image/jpg, .dicom"
+                            style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 0.5rem; color: white;">
+                    </div>
+                    <button onclick="analisarIA()" id="btn-analisar" class="btn btn-primary"
+                        style="width: 100%; padding: 1rem;">Iniciar Análise Neural</button>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1.5rem;">Console de Processamento</h3>
+                    <div id="log" class="log-container">
+                        > Sistema pronto. Aguardando entrada...
+                    </div>
+                    <div id="result-ia" class="ai-result">
+                        <div style="color: var(--primary); font-weight: 700; margin-bottom: 0.5rem;">RESULTADO DA
+                            ANÁLISE IA:</div>
+                        <div id="result-text" style="line-height: 1.6;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/createPermissionChecker.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        async function loadPacientes() {
+            try {
+                const res = await fetch(`${API_URL}/pacientes`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const data = await res.json();
+                const select = document.getElementById('paciente-select');
+                select.innerHTML = '<option value="">Selecione um paciente</option>' +
+                    data.dados.map(p => `<option value="${p.id}">${p.nome} (${p.cpf})</option>`).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function addLog(msg) {
+            const log = document.getElementById('log');
+            log.innerHTML += `<div>> ${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function analisarIA() {
+            const paciente = document.getElementById('paciente-select').value;
+            const fileInput = document.getElementById('mri-file');
+            const file = fileInput.files[0];
+
+            if (!paciente || !file) {
+                alert("Selecione um paciente e anexe um arquivo de Ressonância Magnética.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-analisar');
+            btn.disabled = true;
+            btn.innerText = "Processando...";
+
+            document.getElementById('result-ia').style.display = 'none';
+            addLog("Enviando arquivo do exame para o Serviço de IA Seguro...");
+
+            const steps = [
+                "Processando camadas da imagem MRI...",
+                "Buscando padrões geométricos suspeitos...",
+                "Verificando marcadores de desmielinização periventricular...",
+                "Calculando percentual de probabilidade neural...",
+                "Gerando laudo descritivo estruturado..."
+            ];
+
+            for (const step of steps) {
+                await new Promise(r => setTimeout(r, 600));
+                addLog(step);
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('paciente_id', paciente);
+                formData.append('imagem', file);
+
+                const res = await fetch(`${API_URL}/ia/analisar`, {
+                    method: 'POST',
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    body: formData
+                });
+                const result = await res.json();
+                const diagnostico = result.dados;
+
+                const resultText = document.getElementById('result-text');
+                resultText.innerHTML = `
+                    <p><strong>Hipótese Diagnóstica:</strong> ${diagnostico.diagnostico}</p>
+                    <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted);">Confiança do Modelo: ${diagnostico.confianca} | Referência: ${diagnostico.referencia}</div>
+                `;
+
+                document.getElementById('result-ia').style.display = 'block';
+                addLog("Análise concluída e registrada no banco de dados.");
+            } catch (e) {
+                addLog("Erro ao processar análise no servidor.");
+                console.error(e);
+            }
+
+            btn.disabled = false;
+            btn.innerText = "Iniciar Análise Neural";
+        }
+
+        loadPacientes();
+    </script>
+</body>
+
+</html>

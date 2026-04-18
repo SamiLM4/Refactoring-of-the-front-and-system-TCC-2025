@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários - MedInsight AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/modern.css">
+    <style>
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--text-main);
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+
+        tr:hover td {
+            background: var(--glass-bg);
+        }
+
+        .role-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo"
+                style="font-size: 1.5rem; font-weight: 700; margin-bottom: 2.5rem; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                MedInsight AI
+            </div>
+            <nav id="menu" class="nav-menu"></nav>
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <div id="userEmail" style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;"></div>
+                <button onclick="logout()" class="btn btn-primary" style="width: 100%;">Sair</button>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main-content">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h1 style="font-size: 1.875rem; font-weight: 700;">Usuários e Permissões</h1>
+                <button id="btnNovoUsuario" class="btn btn-primary" style="display: none;" onclick="window.location.href='usuario_form.html'">+ Novo Usuário</button>
+            </header>
+
+            <div class="card">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>EMAIL</th>
+                                <th>PAPEL</th>
+                                <th>CRIADO EM</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTable">
+                            <!-- Carregado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/createPermissionChecker.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const roleFilter = urlParams.get('role');
+
+        async function carregarUsuarios() {
+            await carregarUsuario(); // Ensure user permissions are loaded
+
+            const btnNovo = document.getElementById('btnNovoUsuario');
+            if (btnNovo && temPermissao('usuario', 'criar')) {
+                btnNovo.style.display = 'inline-block';
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/usuarios`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const result = await response.json();
+                const tabela = document.getElementById("usuariosTable");
+                tabela.innerHTML = "";
+
+                let usuarios = result.dados || [];
+
+                if (roleFilter) {
+                    usuarios = usuarios.filter(u => {
+                        const ids = (u.papeis_ids || "").split(",");
+                        return ids.includes(roleFilter);
+                    });
+                }
+
+                usuarios.forEach(u => {
+                    const tr = document.createElement("tr");
+                    const hasRole = u.papeis && u.papeis.trim() !== "";
+                    const roleLabel = hasRole ? u.papeis : '<span style="color: var(--text-muted); font-style: italic;">Papel não definido</span>';
+
+                    let botoes = '';
+                    if (temPermissao('usuario', 'editar')) {
+                        botoes += `<button class="btn btn-secondary btn-sm" onclick="editarUsuario(${u.id})">Editar</button> `;
+                    }
+                    if (temPermissao('usuario', 'deletar')) {
+                        botoes += `<button class="btn btn-sm" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;" onclick="deletarUsuario(${u.id})">Excluir</button>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td>${u.email}</td>
+                        <td><span class="${hasRole ? 'role-badge' : ''}">${roleLabel}</span></td>
+                        <td>${new Date(u.criado_em).toLocaleDateString()}</td>
+                        <td>${botoes}</td>
+                    `;
+                    tabela.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar usuários", error);
+            }
+        }
+
+        function editarUsuario(id) {
+            window.location.href = `usuario_form.html?id=${id}`;
+        }
+
+        async function deletarUsuario(id) {
+            if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+            try {
+                const res = await fetch(`${API_URL}/usuarios/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    carregarUsuarios();
+                } else {
+                    alert("Erro ao excluir usuário.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        carregarUsuarios();
+    </script>
+</body>
+
+</html>

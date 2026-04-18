@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Médico - MedInsight AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/modern.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem;">
+    <div class="card" style="max-width: 600px; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 id="form-title" style="font-size: 1.5rem; font-weight: 700;">Novo Médico</h1>
+            <button onclick="history.back()" class="btn" style="background: var(--glass-bg); color: var(--text-muted); font-size: 0.875rem;">Voltar</button>
+        </div>
+        
+        <form id="medicoForm" style="display: grid; gap: 1.5rem;">
+            <div>
+                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Nome Completo</label>
+                <input type="text" name="nome" id="nome" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">CPF</label>
+                <input type="text" name="cpf" id="cpf" required placeholder="Apenas números" maxlength="11" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">CRM</label>
+                <input type="text" name="crm" id="crm" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div id="passwordContainer">
+                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Senha de Acesso</label>
+                <input type="password" name="senha" id="senha" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Especialidade</label>
+                <input type="text" name="especialidade" id="especialidade" placeholder="Ex: Cardiologista" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Email</label>
+                <input type="email" name="email" id="email" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; margin-top: 1rem;">Salvar Médico</button>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = "../api";
+        const token = localStorage.getItem("access_token");
+        const urlParams = new URLSearchParams(window.location.search);
+        const medicoId = urlParams.get('id');
+
+        if (medicoId) {
+            document.getElementById('form-title').innerText = "Editar Médico";
+            document.getElementById('passwordContainer').style.display = 'block';
+            document.getElementById('senha').placeholder = "Deixe em branco para manter";
+            loadMedico().catch(err => console.error("Erro ao carregar dados", err));
+        }
+
+        async function loadMedico() {
+            const res = await fetch(`${API_URL}/medicos/${medicoId}`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const result = await res.json();
+            const data = result.dados;
+            document.getElementById('nome').value = data.nome || '';
+            document.getElementById('cpf').value = data.cpf || '';
+            document.getElementById('crm').value = data.crm || '';
+            document.getElementById('especialidade').value = data.especialidade || '';
+            document.getElementById('email').value = data.email || '';
+        }
+
+        document.getElementById('medicoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            const method = medicoId ? 'PUT' : 'POST';
+            const url = medicoId ? `${API_URL}/medicos/${medicoId}` : `${API_URL}/medicos`;
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (res.ok) {
+                    alert(result.msg || "Médico salvo com sucesso!");
+                    window.location.href = 'medicos.html';
+                } else {
+                    alert("Erro: " + (result.erro || result.msg || "Falha ao salvar"));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erro de conexão ou no servidor");
+            }
+        });
+    </script>
+</body>
+</html>
