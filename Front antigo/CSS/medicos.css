@@ -1,0 +1,291 @@
+:root {
+  /* Fundo geral */
+  --cor-fundo: #F8FAFC;
+
+  /* Sidebars */
+  --cor-sidebar: #2c3e50;
+  --cor-sidebar-borda: #0C4A6E;
+  --cor-sidebar-titulo: #FFFFFF;
+  --cor-sidebar-subtitulo: #38BDF8;
+  --cor-sidebar-hover-bg: #0A3B58;
+  --cor-sidebar-hover-texto: #38BDF8;
+
+  /* Textos */
+  --cor-texto-principal: #0882c4;
+  --cor-texto-secundario: #0EA5E9;
+  --cor-texto-destaque: #38BDF8;
+  --cor-form: #d0efff;
+
+
+  /* Tabela */
+  --cor-tabela-fundo: #FFFFFF;
+  --cor-tabela-header: #075985;
+  --cor-tabela-borda: #075985;
+  --cor-tabela-header-texto: #FFFFFF;
+  --cor-texto-tabela: #075985;
+  --cor-texto-tabela-hover: #0EA5E9;
+
+  /* Botões */
+  --cor-botao: #075985;
+  --cor-botao-texto: #FFFFFF;
+  --cor-botao-desabilitado: #CBD5E1;
+
+  --cor-botao-gradiente-inicio: #075985;
+  --cor-botao-gradiente-fim: #0EA5E9;
+  --cor-botao-gradiente-hover-inicio: #064E6C;
+  --cor-botao-gradiente-hover-fim: #38BDF8;
+
+  --cor-botao-excluir-inicio: #DC2626;
+  --cor-botao-excluir-fim: #B91C1C;
+  --cor-botao-excluir-hover-inicio: #B91C1C;
+  --cor-botao-excluir-hover-fim: #991B1B;
+
+  /* Inputs */
+  --cor-input-fundo: #FFFFFF;
+  --cor-input-borda: #075985;
+  --cor-input-texto: #075985;
+  --cor-input-focus: #0EA5E9;
+
+  /* Scrollbar */
+  --cor-scrollbar-thumb: #075985;
+  --cor-scrollbar-track: #E5E7EB;
+
+  /* Links */
+  --cor-link: #0EA5E9;
+  --cor-link-hover: #075985;
+
+  /* Sombras (mantive do código original para não perder estilo) */
+  --cor-sombra-sidebar: rgba(0, 0, 0, 0.3);
+  --cor-sombra-sidebar-right: rgba(0, 0, 0, 0.4);
+  --cor-sombra-tabela: rgba(0, 0, 0, 0.3);
+  --cor-sombra-botao: rgba(7, 89, 133, 0.3);
+  --cor-sombra-botao-hover: rgba(14, 165, 233, 0.5);
+}
+
+
+/* ===== Estrutura principal ===== */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-principal);
+}
+
+/* ===== Sidebar esquerda ===== */
+.sidebar {
+    width: 240px;
+    background-color: var(--cor-sidebar);
+    padding-top: 30px;
+    position: fixed;
+    height: 100%;
+    border-right: 1px solid var(--cor-sidebar-borda);
+    box-shadow: 2px 0 8px var(--cor-sombra-sidebar);
+}
+
+.sidebar h2 {
+    color: var(--cor-sidebar-titulo);
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar ul li {
+    padding: 10px 0;
+}
+
+.sidebar ul li a {
+    color: var(--cor-texto-destaque);
+    text-decoration: none;
+    display: block;
+    padding: 10px 20px;
+    font-size: 15px;
+    transition: background-color 0.3s, color 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.sidebar ul li a:hover {
+    background-color: var(--cor-sidebar-hover-bg);
+    color: var(--cor-sidebar-hover-texto);
+    border-left: 4px solid var(--cor-texto-destaque);
+}
+
+/* ===== Sidebar direita (popup) ===== */
+.sidebar-right {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    max-height: 90vh;
+    background-color: var(--cor-sidebar);
+    color: var(--cor-texto-principal);
+    box-shadow: 0 0 10px var(--cor-sombra-sidebar-right);
+    padding: 20px;
+    overflow-y: auto;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    border-radius: 10px;
+}
+
+.sidebar-right.active {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.sidebar-right input,
+.sidebar-right select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--cor-input-borda);
+    background-color: var(--cor-input-fundo);
+    color: var(--cor-input-texto);
+    box-sizing: border-box;
+}
+
+.sidebar-right input:focus,
+.sidebar-right select:focus {
+    border-color: var(--cor-input-focus);
+    outline: none;
+}
+
+.sidebar-right button {
+    margin: 5px 10px 15px 0;
+    background-color: var(--cor-botao);
+    color: var(--cor-botao-texto);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sidebar-right button:hover {
+    background-color: var(--cor-botao-hover);
+    box-shadow: 0 2px 6px var(--cor-sombra-botao-hover);
+}
+
+/* ===== Conteúdo principal ===== */
+.main-content {
+    margin-left: 240px;
+    padding: 30px 40px;
+    width: 100%;
+    background-color: var(--cor-fundo);
+}
+
+/* ===== Tabela ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--cor-tabela-fundo);
+    color: var(--cor-texto-principal);
+    box-shadow: 0 4px 12px var(--cor-sombra-tabela);
+    border: 1px solid var(--cor-tabela-borda);
+}
+
+th, td {
+    border: 1px solid var(--cor-tabela-borda);
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+th {
+    background-color: var(--cor-tabela-header);
+    color: var(--cor-tabela-header-texto);
+    font-weight: 600;
+}
+
+/* ===== Botões ===== */
+button {
+    padding: 8px 14px;
+    background-color: var(--cor-botao);
+    border: none;
+    color: var(--cor-botao-texto);
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--cor-botao-hover);
+    box-shadow: 0 2px 6px var(--cor-sombra-botao);
+}
+
+/* Botão Excluir */
+button.btn-excluir {
+    background-color: var(--cor-botao-excluir-inicio, var(--cor-botao-excluir-fim));
+}
+button.btn-excluir:hover {
+    background-color: var(--cor-botao-excluir-hover-inicio, var(--cor-botao-excluir-hover-fim));
+}
+
+/* Botão Selecionar */
+button.btn-selecionar {
+    background-color: var(--cor-botao-selecionar);
+}
+button.btn-selecionar:hover {
+    background-color: var(--cor-botao-selecionar-hover);
+}
+
+/* ===== Paginação ===== */
+#paginacao {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#paginacao button {
+    margin: 0 4px;
+    padding: 8px 12px;
+    background-color: var(--cor-botao-gradiente-inicio);
+    color: var(--cor-texto-destaque);
+    border: 1px solid var(--cor-botao-gradiente-fim);
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#paginacao button:hover {
+    background-color: var(--cor-botao-paginacao-hover);
+}
+
+#paginacao button.active {
+    background-color: var(--cor-botao);
+    color: var(--cor-botao-texto);
+    font-weight: bold;
+    border: 1px solid var(--cor-botao);
+    box-shadow: 0 0 0 2px var(--cor-sombra-botao);
+    cursor: default;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--cor-scrollbar-thumb);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--cor-scrollbar-track);
+}
+
+#formCadastrarMedico {
+    color: var(--cor-form);
+}
+
+#tituloSidebar {
+    color: var(--cor-sidebar-titulo);
+}

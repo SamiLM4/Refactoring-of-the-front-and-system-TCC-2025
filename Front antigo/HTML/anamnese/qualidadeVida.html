@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qualidade de Vida - Ficha Médica</title>
+  <link rel="icon" type="image/jpeg" href="../../imagens/logo.jpg">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .section label {
+      display: block;
+      margin: 5px 0 2px;
+      font-weight: bold;
+    }
+
+    .section textarea,
+    .section input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .submit-btn {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .submit-btn button {
+      padding: 12px 25px;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .submit-btn button:hover {
+      background-color: #3498db;
+    }
+
+    .back-btn {
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .back-btn button {
+      background-color: #007BFF;
+      color: white;
+      font-size: 1rem;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .back-btn button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Qualidade de Vida</h1>
+    <form id="formQualidadeVida">
+      <div class="section">
+
+        <label for="edss">EDSS:</label>
+        <input type="text" id="edss" name="edss" placeholder="Ex: 3.5" required>
+
+        <label for="questionario_msqol54">Questionário MSQOL-54:</label>
+        <textarea id="questionario_msqol54" name="questionario_msqol54" rows="3"
+          placeholder="Descreva o impacto da doença na qualidade de vida"></textarea>
+
+        <label for="outras_avaliacoes">Outras Avaliações:</label>
+        <textarea id="outras_avaliacoes" name="outras_avaliacoes" rows="3"
+          placeholder="Registre outras avaliações ou observações"></textarea>
+
+      </div>
+
+      <div class="submit-btn">
+        <button type="submit">Salvar</button>
+      </div>
+
+      <div class="back-btn">
+        <button type="button" id="btnVoltar">Voltar</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const cpf = localStorage.getItem('cpfSelecionado');
+      const cpfM = urlParams.get("cpfM");
+
+      if (!cpf) { alert("CPF do paciente ausente!"); return; }
+      const token = localStorage.getItem("token");
+      if (!token) { alert("Token ausente!"); return; }
+
+      const form = document.getElementById("formQualidadeVida");
+      let fichaCompleta = null;
+
+      // Botão Voltar
+      document.getElementById("btnVoltar").addEventListener("click", () => {
+        window.location.href = `/HTML/ficha.html?cpf=${encodeURIComponent(cpf)}&editar=false`;
+      });
+
+      // Buscar dados existentes (GET)
+      fetch(`/ficha/${cpf}`, {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.cod !== 200) throw new Error(data.msg);
+          fichaCompleta = data.dados;
+          preencherFormulario(fichaCompleta.qualidade_vida_em);
+        })
+        .catch(err => alert("Erro ao carregar dados: " + err.message));
+
+      // Preenche o formulário
+      function preencherFormulario(qualidade_vida_em) {
+        form.edss.value = qualidade_vida_em?.edss || "";
+        form.questionario_msqol54.value = qualidade_vida_em?.questionario_msqol54 || "";
+        form.outras_avaliacoes.value = qualidade_vida_em?.outras_avaliacoes || "";
+      }
+
+      // Envio do formulário (PUT)
+      form.addEventListener("submit", e => {
+        e.preventDefault();
+        if (!fichaCompleta) { alert("Ficha não carregada ainda."); return; }
+
+        // Atualiza o objeto qualidade de vida
+        fichaCompleta.qualidade_vida_em = {
+          edss: form.edss.value,
+          questionario_msqol54: form.questionario_msqol54.value,
+          outras_avaliacoes: form.outras_avaliacoes.value
+        };
+
+        // Monta o payload completo
+        const payload = {
+          cpf_medicoResponsavel: cpfM,
+          sintomas: fichaCompleta.sintomas,
+          diagnostico: fichaCompleta.diagnostico,
+          exame_fisico: fichaCompleta.exame_fisico,
+          exames_complementares: fichaCompleta.exames_complementares,
+          historico_medico: fichaCompleta.historico_medico,
+          historico_social: fichaCompleta.historico_social,
+          plano_tratamento: fichaCompleta.plano_tratamento,
+          qualidade_vida_em: fichaCompleta.qualidade_vida_em
+        };
+
+        fetch(`/ficha/${cpf}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(async res => {
+            const text = await res.text();
+            try {
+              return JSON.parse(text);
+            } catch {
+              throw new Error("Resposta do servidor não é JSON: " + text);
+            }
+          })
+          .then(data => {
+            if (data.cod === 200) {
+              alert(data.msg);
+              window.location.href = `/HTML/ficha.html?cpf=${encodeURIComponent(cpf)}&editar=false`;
+            } else {
+              alert("Erro: " + data.msg);
+            }
+          })
+          .catch(err => alert("Erro ao salvar ficha: " + err.message));
+      });
+    });
+  </script>
+</body>
+</html>

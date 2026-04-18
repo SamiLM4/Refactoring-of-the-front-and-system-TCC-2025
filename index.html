@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedInsight AI - Inteligência Médica Avançada</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="front/css/modern.css">
+    <style>
+        .hero {
+            padding: 8rem 2rem;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        }
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .pricing-card {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+        .pricing-card .price {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 1.5rem 0;
+        }
+        .pricing-card ul {
+            list-style: none;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+        }
+        .pricing-card ul li {
+            margin-bottom: 0.75rem;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 4rem;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo" style="font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">MedInsight AI</div>
+        <div>
+            <a href="login.html" class="btn" style="color: var(--text-main); text-decoration: none; margin-right: 1.5rem;">Login</a>
+            <a href="#pricing" class="btn btn-primary">Começar Agora</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Diagnóstico Médico com Inteligência Artificial</h1>
+        <p>Transforme sua clínica com a plataforma mais avançada de análise diagnóstica e gestão de pacientes.</p>
+        <a href="#pricing" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">Ver Planos</a>
+    </header>
+
+    <section id="pricing" style="padding: 8rem 0;">
+        <div class="section-title">
+            <h2>Escolha o Plano Ideal</h2>
+            <p style="color: var(--text-muted);">Transparência total para o crescimento da sua instituição.</p>
+        </div>
+        <div id="pricing-container" class="pricing-grid">
+            <!-- Planos carregados via JS -->
+        </div>
+    </section>
+
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title" style="margin-bottom: 1rem;">Processando Licença...</h2>
+            <p id="modal-msg" style="color: var(--text-muted); margin-bottom: 2rem;">Aguarde um momento enquanto geramos sua chave de acesso.</p>
+            <div id="token-box" style="display: none;">
+                <div style="background: var(--glass-bg); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; word-break: break-all; font-family: monospace; border: 1px dashed var(--primary);" id="generated-token"></div>
+                <p style="font-size: 0.875rem; color: var(--secondary); margin-bottom: 2rem;">IMPORTANTE: Copie seu token. Você precisará dele para o cadastro.</p>
+                <a id="register-link" class="btn btn-primary" style="text-decoration: none;">Ir para Cadastro</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadPlanos() {
+            const res = await fetch('api/planos');
+            const result = await res.json();
+            const planos = result.dados;
+            const container = document.getElementById('pricing-container');
+            
+            container.innerHTML = planos.map(p => `
+                <div class="card pricing-card">
+                    <h3 style="font-size: 1.5rem; font-weight: 700;">${p.nome}</h3>
+                    <div class="price" style="font-size: 1.5rem; color: var(--text-muted);">Teste Grátis</div>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">${p.descricao}</p>
+                    <ul>
+                        <li>Até ${p.limite_usuarios || 'Ilimitados'} Usuários</li>
+                        <li>Até ${p.limite_medicos || 'Ilimitados'} Médicos</li>
+                        <li>Até ${p.limite_pacientes || 'Ilimitados'} Pacientes</li>
+                        <li>${p.duracao_dias} Dias de Duração</li>
+                    </ul>
+                    <button onclick="buyPlan(${p.id}, '${p.nome}')" class="btn btn-primary" style="margin-top: auto;">Selecionar Plano</button>
+                </div>
+            `).join('');
+        }
+
+        async function buyPlan(id, nome) {
+            const email = prompt("Digite seu email para receber o token da licença:");
+            if (!email) return;
+
+            const modal = document.getElementById('purchaseModal');
+            modal.style.display = 'flex';
+
+            try {
+                const res = await fetch('api/licencas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plano_id: id, email: email })
+                });
+
+                const result = await res.json();
+
+                if (result.status && result.dados.token) {
+                    const token = result.dados.token;
+                    document.getElementById('modal-title').innerText = "Licença Gerada!";
+                    document.getElementById('modal-msg').innerText = "Sua licença para o plano " + nome + " foi criada.";
+                    document.getElementById('token-box').style.display = 'block';
+                    document.getElementById('generated-token').innerText = token;
+                    document.getElementById('register-link').href = 'register_institution.html?token=' + token;
+                } else {
+                    alert("Erro ao gerar licença: " + (result.dados.msg || "Erro desconhecido"));
+                    modal.style.display = 'none';
+                }
+            } catch (e) {
+                alert("Erro na requisição");
+                modal.style.display = 'none';
+            }
+        }
+
+        loadPlanos();
+    </script>
+</body>
+</html>

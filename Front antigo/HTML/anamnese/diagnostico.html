@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sintomas - Ficha Médica</title>
+    <link rel="icon" type="image/jpeg" href="../../imagens/logo.jpg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section label {
+            display: block;
+            margin: 5px 0 2px;
+            font-weight: bold;
+        }
+
+        .section input[type="text"],
+        .section textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .submit-btn {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .submit-btn button {
+            padding: 12px 25px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submit-btn button:hover {
+            background-color: #3498db;
+        }
+
+        .back-btn {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .back-btn button {
+            background-color: #007BFF;
+            color: white;
+            font-size: 1rem;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .back-btn button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Diagnóstico</h1>
+        <form id="formDiagnostico">
+            <div class="section">
+
+                <label for="data_diagnostico">Data do Diagnóstico:</label>
+                <input type="date" id="data_diagnostico" name="data_diagnostico" required>
+
+                <label for="tipo_em">Tipo de Esclerose Múltipla (EMRR, EMSP, EMPP ou EMSP):</label>
+                <input type="text" id="tipo_em" name="tipo_em" maxlength="5" placeholder="Ex: RR, SP, PP" required>
+
+                <label for="surtos">Surtos:</label>
+                <textarea id="surtos" name="surtos" rows="4"
+                    placeholder="Descreva os surtos ou observações médicas"></textarea>
+
+            </div>
+
+            <div class="submit-btn">
+                <button type="submit">Salvar</button>
+            </div>
+            <div class="back-btn">
+                <button type="button" id="btnVoltar">Voltar</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cpf = localStorage.getItem('cpfSelecionado');
+            const cpfM = urlParams.get("cpfM");
+            const editarParam = urlParams.get("editar");
+
+            if (!cpf) { alert("CPF do paciente ausente!"); return; }
+            const token = localStorage.getItem("token");
+            if (!token) { alert("Token ausente!"); return; }
+
+            const form = document.getElementById("formDiagnostico");
+            let fichaCompleta = null;
+
+            document.getElementById("btnVoltar").addEventListener("click", () => {
+                window.location.href = `/HTML/ficha.html?cpf=${encodeURIComponent(cpf)}&editar=false`;
+            });
+
+            // Buscar dados existentes
+            fetch(`/ficha/${cpf}`, {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.cod !== 200) throw new Error(data.msg);
+                    fichaCompleta = data.dados;
+                    preencherFormulario(fichaCompleta.diagnostico);
+                })
+                .catch(err => alert("Erro ao carregar dados: " + err.message));
+
+            function preencherFormulario(diagnostico) {
+                form.data_diagnostico.value = diagnostico.data_diagnostico || "";
+                form.tipo_em.value = diagnostico.tipo_em || "";
+                form.surtos.value = diagnostico.surtos || "";
+            }
+
+            form.addEventListener("submit", e => {
+                e.preventDefault();
+                if (!fichaCompleta) { alert("Ficha não carregada ainda."); return; }
+
+                fichaCompleta.diagnostico = {
+                    data_diagnostico: form.data_diagnostico.value,
+                    tipo_em: form.tipo_em.value,
+                    surtos: form.surtos.value
+                };
+
+                const payload = {
+                    cpf_medicoResponsavel: cpfM,
+                    sintomas: fichaCompleta.sintomas,
+                    diagnostico: fichaCompleta.diagnostico,
+                    exame_fisico: fichaCompleta.exame_fisico,
+                    exames_complementares: fichaCompleta.exames_complementares,
+                    historico_medico: fichaCompleta.historico_medico,
+                    historico_social: fichaCompleta.historico_social,
+                    plano_tratamento: fichaCompleta.plano_tratamento,
+                    qualidade_vida_em: fichaCompleta.qualidade_vida_em
+                };
+
+                fetch(`/ficha/${cpf}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                })
+                    .then(async res => {
+                        const text = await res.text(); // pega o retorno como texto
+                        try {
+                            return JSON.parse(text); // tenta converter em JSON
+                        } catch {
+                            throw new Error("Resposta do servidor não é JSON: " + text);
+                        }
+                    })
+                    .then(data => {
+                        if (data.cod === 200) {
+                            alert(data.msg);
+                            window.location.href = `/HTML/ficha.html?cpf=${encodeURIComponent(cpf)}&editar=false`;
+                        } else {
+                            alert("Erro: " + data.msg);
+                        }
+                    })
+                    .catch(err => alert("Erro ao salvar ficha: " + err.message));
+
+            });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+     /* ============================
+   Paleta de Cores
+   ============================ */
+        :root {
+            --cor-fundo-gradiente-inicio: #E0F2FE;
+            --cor-fundo-gradiente-fim: #F8FAFC;
+
+            --cor-container-fundo: #2c3e50;
+            --cor-container-sombra: rgba(12, 74, 110, 0.5);
+
+            --cor-texto-principal: #0d91d8;
+            --cor-texto-secundario: #38BDF8;
+
+            --cor-input-fundo: #FFFFFF;
+            --cor-input-texto: #075985;
+            --cor-input-borda: #075985;
+            --cor-input-focus: #0EA5E9;
+
+            --cor-botao-gradiente-inicio: #075985;
+            --cor-botao-gradiente-fim: #0EA5E9;
+            --cor-botao-gradiente-hover-inicio: #064E6C;
+            --cor-botao-gradiente-hover-fim: #38BDF8;
+            --cor-botao-texto: #FFFFFF;
+        }
+
+        /* ============================
+   Layout Base
+   ============================ */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, var(--cor-fundo-gradiente-inicio), var(--cor-fundo-gradiente-fim));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--cor-texto-principal);
+        }
+
+        /* ============================
+   Container Principal
+   ============================ */
+        .container {
+            background-color: var(--cor-container-fundo);
+            padding: 30px 40px 30px 30px;
+            border-radius: 14px;
+            width: 400px;
+            box-shadow: 0 6px 25px var(--cor-container-sombra);
+            color: var(--cor-texto-secundario);
+        }
+
+        /* ============================
+   Título
+   ============================ */
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            color: var(--cor-texto-secundario);
+        }
+
+        /* ============================
+   Campos de Entrada
+   ============================ */
+        input,
+        select {
+            width: calc(100% - 10px);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid var(--cor-input-borda);
+            background-color: var(--cor-input-fundo);
+            color: var(--cor-input-texto);
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--cor-input-focus);
+            box-shadow: 0 0 5px var(--cor-input-focus);
+        }
+
+        /* ============================
+   Botão
+   ============================ */
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 18px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, var(--cor-botao-gradiente-inicio), var(--cor-botao-gradiente-fim));
+            color: var(--cor-botao-texto);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(7, 89, 133, 0.4);
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, var(--cor-botao-gradiente-hover-inicio), var(--cor-botao-gradiente-hover-fim));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.5);
+        }
+
+        /* ============================
+   Mensagem de Retorno
+   ============================ */
+        #message {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--cor-texto-secundario);
+            font-weight: 500;
+        }

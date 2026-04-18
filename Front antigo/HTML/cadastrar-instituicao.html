@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Instituição</title>
+    <link rel="icon" type="image/jpeg" href="../imagens/logo.jpg">
+
+    <style>
+        :root {
+            /* Fundo */
+            --bg-start: #0d4c8b;
+            --bg-mid: #2563eb;
+            --bg-end: #e0f2fe;
+
+            /* Container */
+            --container-bg: #0c2239;
+            --container-border: #1d4ed8;
+            --container-shadow: rgba(13, 76, 139, 0.35);
+
+            /* Textos */
+            --title-color: #ffffff;
+            --text-color: #e2e8f0;
+
+            /* Inputs */
+            --input-bg: #ffffff;
+            --input-border: #075985;
+            --input-text: #075985;
+            --input-focus-bg: #f0f9ff;
+            --input-focus-border: #3b82f6;
+
+            /* Botões */
+            --btn-start: #0077ff;
+            --btn-end: #60a5fa;
+            --btn-hover-start: #2563eb;
+            --btn-hover-end: #60a5fa;
+            --btn-text: #ffffff;
+
+            /* Erro */
+            --error-color: #f87171;
+        }
+
+        /* Layout geral */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-mid) 50%, var(--bg-end));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* Container principal */
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 20px;
+            padding: 30px 40px;
+            max-width: 900px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 28px var(--container-shadow);
+            border: 1px solid var(--container-border);
+        }
+
+        /* Logo oval */
+        .logo {
+            width: 150px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+        }
+
+        /* Título */
+        h1 {
+            color: var(--title-color);
+            font-size: 26px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Grid de inputs */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .form-grid input,
+        .form-grid select {
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-grid input:focus,
+        .form-grid select:focus {
+            border-color: var(--input-focus-border);
+            background-color: var(--input-focus-bg);
+            box-shadow: 0 0 6px rgba(14, 165, 233, 0.5);
+            outline: none;
+        }
+
+        /* Token grande acima */
+        #token {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+        }
+
+        /* Botões */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .btn-group button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
+            color: var(--btn-text);
+            transition: all 0.3s ease;
+        }
+
+        .btn-group button:hover {
+            background: linear-gradient(45deg, var(--btn-hover-start), var(--btn-hover-end));
+            transform: translateY(-2px);
+        }
+
+        /* Mensagem */
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="../imagens/logo.jpg" alt="Logo" class="logo">
+        <h1>Cadastrar Instituição</h1>
+
+        <input type="text" id="token" placeholder="Insira seu token de licença">
+
+        <div class="form-grid">
+            <input type="text" id="nome" placeholder="Nome da Instituição" required>
+            <input type="text" id="cep" placeholder="CEP" required>
+            <input type="text" id="logradouro" placeholder="Logradouro" required>
+            <input type="text" id="cidade" placeholder="Cidade" required>
+            <input type="text" id="bairro" placeholder="Bairro" required>
+            <input type="text" id="cnpj" placeholder="CNPJ" required>
+            <select id="tipo" required>
+                <option value="">Selecione o tipo</option>
+                <option value="privado">Privado</option>
+                <option value="publico">Público</option>
+                <option value="filantropico">Filantrópico</option>
+            </select>
+            <input type="text" id="telefone" placeholder="Telefone" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="url" id="site" placeholder="Site">
+            <input type="text" id="nome_responsavel" placeholder="Nome do responsável" required>
+            <input type="text" id="telefone_responsavel" placeholder="Telefone do responsável" required>
+        </div>
+
+        <div class="btn-group">
+            <button id="cadastrarBtn">Cadastrar Instituição</button>
+            <button type="button" onclick="window.location.href='/index.html'">Voltar</button>
+        </div>
+
+        <div id="message"></div>
+    </div>
+</body>
+
+</html>
+
+
+<script>
+    const button = document.getElementById('cadastrarBtn');
+    const message = document.getElementById('message');
+
+    button.addEventListener('click', async () => {
+        const token = document.getElementById('token').value.trim();
+        if (!token) {
+            message.textContent = 'Por favor, insira o token.';
+            return;
+        }
+
+        const data = {
+            nome: document.getElementById('nome').value,
+            CEP: document.getElementById('cep').value,
+            logradouro: document.getElementById('logradouro').value,
+            cidade: document.getElementById('cidade').value,
+            bairro: document.getElementById('bairro').value,
+            cnpj: document.getElementById('cnpj').value,
+            tipo: document.getElementById('tipo').value,
+            telefone: document.getElementById('telefone').value,
+            email: document.getElementById('email').value,
+            site: document.getElementById('site').value,
+            nome_responsavel: document.getElementById('nome_responsavel').value,
+            telefone_responsavel: document.getElementById('telefone_responsavel').value
+        };
+
+        try {
+            const response = await fetch('/instituicao', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.status) {
+                message.style.color = '#90ee90';
+                message.innerHTML = `${result.msg}<br>Login ADM: ${result.login_adm}<br>Senha ADM: ${result.senha_adm}`;
+            } else {
+                message.style.color = '#ff7373';
+                message.textContent = result.msg || 'Erro ao cadastrar instituição.';
+            }
+        } catch (error) {
+            message.style.color = '#ff7373';
+            message.textContent = 'Erro na conexão com a API.';
+            console.error(error);
+        }
+    });
+</script>
+
+</html>

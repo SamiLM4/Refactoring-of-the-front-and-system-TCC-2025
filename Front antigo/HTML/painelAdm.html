@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administradores</title>
+    <link rel="icon" type="image/jpeg" href="../imagens/logo.jpg">
+    <link rel="stylesheet" href="../CSS/adm.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>Painel</h2>
+        <ul>
+            <li><a href="painel.html">Voltar ao Painel</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1>Lista de Administradores</h1>
+        <div id="cadastrarAdmArea" style="display:none; margin-bottom: 15px;">
+            <button onclick="abrirSidebarCadastro()">Cadastrar ADM</button>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin: 10px 0;">
+            <input type="text" id="filtro" placeholder="Filtrar"
+                style="padding: 8px; width: 300px; border-radius: 5px 0 0 5px; border: 1px solid #00b7ff; border-right: none;" />
+            <button onclick="filtrarPacientes()"
+                style="padding: 8px 16px; border-radius: 0 5px 5px 0; border: 1px solid #cccccc; background-color: #006eff; color: white; cursor: pointer;">
+                Buscar
+            </button>
+        </div>
+
+        <table id="tabelaAdms">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Selecionar</th>
+                    <th>Excluir</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Conteúdo será carregado via JS -->
+            </tbody>
+        </table>
+        <div id="paginacao" style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+    </div>
+
+    <!-- Sidebar para editar ADM -->
+    <div id="sidebarEditarAdm" class="sidebar-right">
+        <h2>Editar Administrador</h2>
+        <form id="formEditarAdm">
+            <input type="hidden" id="idAdm">
+            <label>Nome:</label>
+            <input type="text" id="nomeAdmEditar" required>
+
+            <label>Email:</label>
+            <input type="email" id="emailAdmEditar" required>
+
+            <label>Senha:</label>
+            <input type="password" id="senhaAdmEditar" required>
+
+            <button type="button" onclick="salvarAlteracoesAdm()">Salvar Alterações</button>
+            <button type="button" onclick="fecharSidebar()">Fechar</button>
+        </form>
+    </div>
+
+    <!-- Sidebar Direita - Cadastro de ADM -->
+    <div id="sidebarRight" class="sidebar-right">
+        <h2>Cadastrar ADM</h2>
+        <label for="nome">Nome:</label>
+        <input type="text" id="nomeAdmCadastro" placeholder="Digite o nome">
+
+        <label for="email">Email:</label>
+        <input type="email" id="emailAdmCadastro" placeholder="Digite o email">
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senhaAdmCadastro" placeholder="Digite a senha">
+
+        <button onclick="cadastrarAdm()">Cadastrar</button>
+        <button onclick="fecharSidebar()">Fechar</button>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Usuário não autenticado. Faça login novamente.");
+            window.location.href = "../login.html";
+        }
+
+        const payload = jwt_decode(token);
+        const papel = payload.papel;
+
+        // Apenas ADM pode acessar a página
+        if (papel !== "adm") {
+            alert("Acesso negado. Somente administradores podem acessar essa página.");
+            window.location.href = "painel.html";
+        } else {
+            document.getElementById("cadastrarAdmArea").style.display = "block";
+        }
+
+        let paginaAtual = 1;
+
+        function carregarAdms(pagina = 1, filtro = "") {
+            paginaAtual = pagina;
+
+            let url;
+            if (filtro != null && filtro != "") {
+                console.log(filtro);
+                url = `/adm/filtrar/${encodeURIComponent(filtro)}`;
+            } else {
+                url = `/adm/${pagina}`;
+            }
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    const tabelaBody = document.querySelector("#tabelaAdms tbody");
+                    const paginacao = document.getElementById("paginacao");
+
+                    tabelaBody.innerHTML = "";
+                    paginacao.innerHTML = "";
+
+                    const listaAdms = (data[0]?.administradores) || [];
+                    const totalPaginas = Math.ceil((data[0]?.total || 0) / 5);
+
+                    if (listaAdms.length === 0) {
+                        tabelaBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum administrador encontrado.</td></tr>';
+                        return;
+                    }
+
+                    listaAdms.forEach(adm => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                <td>${adm.id}</td>
+                <td>${adm.nome}</td>
+                <td>${adm.email}</td>
+                <td><button class="btn-selecionar" onclick="selecionarAdm(${adm.id}, '${adm.nome}', '${adm.email}')">Selecionar</button></td>
+                <td><button class="btn-excluir" onclick="excluirAdm(${adm.id})">Excluir</button></td>
+            `;
+                        tabelaBody.appendChild(row);
+                    });
+
+                    const maxBotoesVisiveis = 5;
+                    let startPage = Math.max(1, paginaAtual - Math.floor(maxBotoesVisiveis / 2));
+                    let endPage = startPage + maxBotoesVisiveis - 1;
+
+                    if (endPage > totalPaginas) {
+                        endPage = totalPaginas;
+                        startPage = Math.max(1, endPage - maxBotoesVisiveis + 1);
+                    }
+
+                    // Botão de página anterior
+                    if (paginaAtual > 1) {
+                        const botaoAnterior = document.createElement("button");
+                        botaoAnterior.textContent = "«";
+                        botaoAnterior.onclick = () => carregarAdms(paginaAtual - 1);
+                        paginacao.appendChild(botaoAnterior);
+                    }
+
+                    // Botões de página numerados
+                    for (let i = startPage; i <= endPage; i++) {
+                        const botao = document.createElement("button");
+                        botao.textContent = i;
+                        botao.classList.toggle("active", i === paginaAtual);
+                        botao.disabled = (i === paginaAtual);
+                        botao.onclick = () => carregarAdms(i);
+                        paginacao.appendChild(botao);
+                    }
+
+                    // Botão de próxima página
+                    if (paginaAtual < totalPaginas) {
+                        const botaoProximo = document.createElement("button");
+                        botaoProximo.textContent = "»";
+                        botaoProximo.onclick = () => carregarAdms(paginaAtual + 1);
+                        paginacao.appendChild(botaoProximo);
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar administradores:', error);
+                });
+        }
+
+
+        function abrirSidebarCadastro() {
+            document.getElementById("sidebarRight").classList.add("active");
+            document.getElementById("overlay").classList.add("active");
+        }
+
+        function fecharSidebar() {
+            document.getElementById("sidebarEditarAdm").classList.remove("active");
+            document.getElementById("sidebarRight").classList.remove("active");
+            document.getElementById("overlay").classList.remove("active");
+        }
+
+        function cadastrarAdm() {
+            const nome = document.getElementById("nomeAdmCadastro").value;
+            const email = document.getElementById("emailAdmCadastro").value;
+            const senha = document.getElementById("senhaAdmCadastro").value;
+
+            if (!nome || !email || !senha) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            const novoAdm = { nome, email, senha };
+
+            fetch("/adm", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(novoAdm)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        alert("Administrador cadastrado com sucesso!");
+                        fecharSidebar();
+                        carregarAdms(paginaAtual);
+                    } else {
+                        alert("Erro ao cadastrar: " + data.msg);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao cadastrar ADM:", error);
+                });
+        }
+
+        function selecionarAdm(id, nome, email) {
+            document.getElementById("idAdm").value = id;
+            document.getElementById("nomeAdmEditar").value = nome;
+            document.getElementById("emailAdmEditar").value = email;
+            document.getElementById("senhaAdmEditar").value = "";
+
+            document.getElementById("sidebarEditarAdm").classList.add("active");
+            document.getElementById("overlay").classList.add("active");
+        }
+
+        function salvarAlteracoesAdm() {
+            const adm = {
+                id: document.getElementById("idAdm").value,
+                nome: document.getElementById("nomeAdmEditar").value,
+                email: document.getElementById("emailAdmEditar").value,
+                senha: document.getElementById("senhaAdmEditar").value
+            };
+
+            fetch("/adm", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(adm)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        alert("Administrador atualizado com sucesso!");
+                        fecharSidebar();
+                        carregarAdms(paginaAtual);
+                    } else {
+                        alert("Erro ao atualizar: " + data.msg);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao atualizar ADM:", error);
+                });
+        }
+
+        function excluirAdm(id) {
+            if (confirm("Tem certeza que deseja excluir este administrador?")) {
+                fetch(`/adm/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.msg);
+                        window.location.reload();
+                        carregarAdms(paginaAtual);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao excluir ADM:', error);
+                    });
+            }
+        }
+
+        // Carregar página 1 ao entrar
+        carregarAdms();
+
+        function filtrarPacientes() {
+            const valorFiltro = document.getElementById("filtro").value;
+            carregarAdms(1, valorFiltro); // Chama passando o filtro
+        }
+    </script>
+
+    <div id="overlay"></div>
+
+
+</body>
+
+</html>

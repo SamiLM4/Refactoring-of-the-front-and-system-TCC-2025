@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Controle</title>
+    <link rel="icon" type="image/jpeg" href="../imagens/logo.jpg">
+    <link rel="stylesheet" href="../CSS/painel.css" />
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>Painel</h2>
+        <ul>
+            <li><a href="painelMedico.html" id="menuMedicos">Médicos</a></li>
+            <li><a href="painelPacientes.html" id="menuPacientes">Pacientes</a></li>
+            <!-- <li><a href="painelFichas.html" id="menuFichas">Fichas</a></li> -->
+            <li><a href="painelAdm.html" id="menuAdministradores" style="display:none;">Administradores</a></li>
+            <li class="logout-button" id="logoutBtn">Sair</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1 id="boasVindas">Bem-vindo ao Painel</h1>
+        <p>Escolha uma opção no menu lateral para começar</p>
+        <div class="clock" id="clock"></div>
+
+        <!-- Filtro para pacientes sem diagnóstico -->
+        <div class="filtro-container">
+            <input type="text" id="filtro" placeholder="Filtrar" />
+            <button onclick="filtrarPacientes()">Buscar</button>
+        </div>
+
+        <!-- Tabela 1: Pacientes sem diagnóstico -->
+        <h2>Pacientes sem diagnósticos</h2>
+        <table id="tabelaPacientes">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th id="cpf">CPF</th>
+                    <th>Email</th>
+                    <th>Pacientes sem Diagnóstico</th>
+                    <th>Ir para ficha</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Conteúdo via JS -->
+            </tbody>
+        </table>
+        <div id="paginacao"></div>
+
+        <!-- Tabela 2: Pacientes do médico logado -->
+        <br><br>
+        <h2 id="seuspacientes">Seus Pacientes</h2>
+        <table id="tabelaPacientesMedico">
+            <thead>
+                <tr>
+                    <th>CPF</th>
+                    <th>Nome</th>
+                    <th id='selecionarPaciente'>Ir para ficha</th>
+                    <th id='atualizarPaciente'>Atualizar Paciente</th>
+                    <th id='excluirPaciente'>Excluir Paciente</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Conteúdo via JS (pacientes do médico) -->
+            </tbody>
+        </table>
+        <div id="paginacaoPacientes"></div>
+
+        <div id="medicoCard" class="card-medico" style="display:none;">
+            <h2>Informações do Médico</h2>
+            <p><strong>Nome:</strong> <span id="medicoNome"></span></p>
+            <p><strong>CPF:</strong> <span id="medicoCPF"></span></p>
+            <p><strong>CRM:</strong> <span id="medicoCRM"></span></p>
+            <p><strong>Email:</strong> <span id="medicoEmail"></span></p>
+        </div>
+    </div>
+    <a id="btnChat" href="#" class="btn-flutuante" style="display:none;">+</a>
+
+    <!-- Sidebar de Detalhes do Paciente (mesma da página de pacientes) -->
+    <div id="sidebarPaciente" class="sidebar-right">
+        <h2>Detalhes do Paciente</h2>
+        <form id="formEditarPaciente">
+            <label>Nome:</label>
+            <input type="text" id="nome" />
+
+            <label style="display:none;">CPF:</label>
+            <input type="hidden" id="cpf" />
+
+            <label>Sexo:</label>
+            <input type="text" id="sexo" />
+
+            <label>Endereço:</label>
+            <input type="text" id="endereco" />
+
+            <label>Telefone:</label>
+            <input type="text" id="telefone" />
+
+            <label>Email:</label>
+            <input type="text" id="email" />
+
+            <label>Profissão:</label>
+            <input type="text" id="profissao" />
+
+            <label>Estado Civil:</label>
+            <input type="text" id="estadoCivil" />
+
+            <label>Nome do Cuidador:</label>
+            <input type="text" id="nomeCuidador" />
+
+            <label>Telefone do Cuidador:</label>
+            <input type="text" id="telefoneCuidador" />
+            <!-- Botão na sidebar -->
+            <div class="botoes-acoes">
+                <button type="button" id="btnAtualizar" onclick="atualizarPacienteConfirmar()">Atualizar</button>
+                <button type="button" onclick="fecharSidebar()">Fechar</button>
+            </div>
+
+        </form>
+    </div>
+
+
+    <script>
+        const token = localStorage.getItem("token");
+        if (token) {
+            const payload = jwt_decode(token);
+            const papel = payload.papel;
+
+            if (papel === "adm") {
+                document.getElementById("menuAdministradores").style.display = "block";
+                document.getElementById("seuspacientes").style.display = "none";
+                document.getElementById("tabelaPacientesMedico").style.display = "none";
+
+            } else {
+                const cpfHeader = document.getElementById("cpf");
+                if (cpfHeader) cpfHeader.style.display = "none";
+            }
+        } else {
+
+            alert("Usuário não autenticado. Faça login novamente.");
+            window.location.href = "../login.html";
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById("clock").innerText = now.toLocaleString("pt-BR", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+
+        function carregarPacientes(pagina = 1, filtro = "") {
+            paginaAtual = pagina;
+
+            let url;
+            if (filtro != null && filtro != "") {
+                //                console.log(filtro);
+                url = `/paciente/filtrar/${encodeURIComponent(filtro)}/diagnostico`;
+            } else {
+                url = `/paciente/${pagina}/diagnostico`;
+            }
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const tabelaBody = document.querySelector("#tabelaPacientes tbody");
+                    const paginacao = document.getElementById("paginacao");
+
+                    tabelaBody.innerHTML = "";
+                    paginacao.innerHTML = "";
+
+                    const listaPacientes = data.pacientes || [];
+                    const totalPaginas = Math.ceil((data.total || 0) / 5); // ajuste o divisor conforme quantidade por página
+
+                    if (listaPacientes.length === 0) {
+                        tabelaBody.innerHTML = '<tr><td colspan="5">Nenhum paciente encontrado.</td></tr>';
+                        return;
+                    }
+
+                    listaPacientes.forEach(paciente => {
+                        const row = document.createElement("tr");
+
+                        if (localStorage.getItem("papel") === "medico") {
+                            row.innerHTML = `
+                            <td class="texto-tabela" data-label="Nome">${paciente.nome}</td>
+                            <td class="texto-tabela" data-label="Email">${paciente.email}</td>
+                            <td class="texto-tabela laranja" data-label="Sem Diagnóstico">‼️Sem Diagnóstico‼️</td>
+                            <td class="texto-tabela" data-label="Ir para ficha"><button class="btn-diagnostico" onclick='irparadiagnostico("${paciente.cpf}")'>Ir para ficha</button></td>
+                            `;
+                        } else {
+
+                            row.innerHTML = `
+                            <td class="texto-tabela" data-label="Nome">${paciente.nome}</td>
+                            <td class="texto-tabela" data-label="CPF">${paciente.cpf}</td>
+                            <td class="texto-tabela" data-label="Email">${paciente.email}</td>
+                            <td class="texto-tabela laranja" data-label="Sem Diagnóstico">‼️Sem Diagnóstico‼️</td>
+                            <td class="texto-tabela" data-label="Ir para ficha"><button class="btn-diagnostico" onclick='irparadiagnostico("${paciente.cpf}")'>Ir para ficha</button></td>
+                            `;
+                        }
+
+                        tabelaBody.appendChild(row);
+                    });
+
+                    // Controle dos botões de paginação (máximo 5 visíveis)
+                    const maxBotoesVisiveis = 5;
+                    let startPage = Math.max(1, paginaAtual - Math.floor(maxBotoesVisiveis / 2));
+                    let endPage = startPage + maxBotoesVisiveis - 1;
+
+                    if (endPage > totalPaginas) {
+                        endPage = totalPaginas;
+                        startPage = Math.max(1, endPage - maxBotoesVisiveis + 1);
+                    }
+
+                    // Botão página anterior
+                    if (paginaAtual > 1) {
+                        const botaoAnterior = document.createElement("button");
+                        botaoAnterior.textContent = "«";
+                        botaoAnterior.onclick = () => carregarPacientes(paginaAtual - 1);
+                        paginacao.appendChild(botaoAnterior);
+                    }
+
+                    // Botões de página numerados
+                    for (let i = startPage; i <= endPage; i++) {
+                        const botao = document.createElement("button");
+                        botao.textContent = i;
+                        botao.classList.toggle("active", i === paginaAtual);
+                        botao.disabled = (i === paginaAtual);
+                        botao.onclick = () => carregarPacientes(i);
+                        paginacao.appendChild(botao);
+                    }
+
+                    // Botão próxima página
+                    if (paginaAtual < totalPaginas) {
+                        const botaoProximo = document.createElement("button");
+                        botaoProximo.textContent = "»";
+                        botaoProximo.onclick = () => carregarPacientes(paginaAtual + 1);
+                        paginacao.appendChild(botaoProximo);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar pacientes:', error);
+                });
+        }
+
+        function carregarDetalhesMedico(token, pagina = 1) {
+            const paginaAtualPaciente = pagina;
+
+            // Corrigir URL para passar apenas uma vez a página
+            fetch(`/medico/gerarpacientes/${paginaAtualPaciente}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.cod === 200 && data.Médico) {
+                        const medico = data.Médico;
+
+                        // Exibe dados básicos do médico
+                        const medicoInfoDiv = document.getElementById("medicoInfo");
+                        document.getElementById("medicoCard").style.display = "block";
+                        document.getElementById("medicoNome").innerText = medico.nome;
+                        document.getElementById("medicoCPF").innerText = medico.CPF;
+                        document.getElementById("medicoCRM").innerText = medico.CRM;
+                        document.getElementById("medicoEmail").innerText = medico.email;
+
+                        const btnChat = document.getElementById("btnChat");
+                        if (btnChat) {
+                            localStorage.setItem('cpfMedicoSelecionado', medico.CPF);
+                            btnChat.href = "chat.html";
+                        }
+
+                        // Preenche tabela de pacientes do médico
+                        const pacientes = medico.Pacientes.pacientes || [];
+                        const tbody = document.querySelector("#tabelaPacientesMedico tbody");
+                        tbody.innerHTML = "";
+
+                        pacientes.forEach(paciente => {
+                            const tr = document.createElement("tr");
+                            tr.innerHTML = `
+                    <td>${paciente.cpf}</td>
+                    <td>${paciente.nome}</td>
+                    <td><button class="btn-diagnostico" onclick='irparaficha("${paciente.cpf}")'>Ir para ficha</button></td>
+                    <td><button class="btn-atualizar" onclick='atualizarPaciente("${paciente.cpf}")'>Atualizar</button></td>
+                    <td><button class="btn-excluir" onclick='excluirPaciente("${paciente.cpf}")'>Excluir</button></td>
+                    `;
+                            tbody.appendChild(tr);
+                        });
+
+                        // Paginação para pacientes do médico
+                        const totalPacientes = medico.Pacientes.total || pacientes.length;
+                        const itensPorPagina = 5; // Ajuste para 5, já que você mencionou 5 itens por página
+                        const totalPaginas = Math.ceil(totalPacientes / itensPorPagina);
+
+                        const paginacaoDiv = document.getElementById("paginacaoPacientes");
+                        if (paginacaoDiv) {
+                            paginacaoDiv.innerHTML = "";
+                            const maxBotoesVisiveis = 5;  // Número máximo de botões visíveis
+                            let startPage = Math.max(1, paginaAtualPaciente - Math.floor(maxBotoesVisiveis / 2));
+                            let endPage = startPage + maxBotoesVisiveis - 1;
+
+                            if (endPage > totalPaginas) {
+                                endPage = totalPaginas;
+                                startPage = Math.max(1, endPage - maxBotoesVisiveis + 1);
+                            }
+
+                            // Botão "Anterior"
+                            if (paginaAtualPaciente > 1) {
+                                const btnAnterior = document.createElement("button");
+                                btnAnterior.textContent = "«";
+                                btnAnterior.onclick = () => carregarDetalhesMedico(token, paginaAtualPaciente - 1);
+                                paginacaoDiv.appendChild(btnAnterior);
+                            }
+
+                            // Botões de página
+                            for (let i = startPage; i <= endPage; i++) {
+                                const btn = document.createElement("button");
+                                btn.textContent = i;
+                                btn.classList.toggle("active", i === paginaAtualPaciente);
+                                btn.disabled = (i === paginaAtualPaciente);
+                                btn.onclick = () => carregarDetalhesMedico(token, i);
+                                paginacaoDiv.appendChild(btn);
+                            }
+
+                            // Botão "Próximo"
+                            if (paginaAtualPaciente < totalPaginas) {
+                                const btnProximo = document.createElement("button");
+                                btnProximo.textContent = "»";
+                                btnProximo.onclick = () => carregarDetalhesMedico(token, paginaAtualPaciente + 1);
+                                paginacaoDiv.appendChild(btnProximo);
+                            }
+                        }
+                    } else {
+                        console.error("Médico não encontrado ou erro na resposta.");
+                    }
+                })
+                .catch(err => {
+                    console.error("Erro ao carregar os dados do médico: ", err);
+                });
+        }
+
+        function excluirPaciente(cpf) {
+            if (!confirm(`Tem certeza que deseja excluir o paciente com CPF ${cpf}?`)) {
+                return;
+            }
+
+            fetch(`/paciente/${cpf}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.cod === 200) {
+                        alert("Paciente excluído com sucesso.");
+                        carregarDetalhesMedico(token); // Recarrega a lista de pacientes do médico
+                    } else {
+                        alert("Erro ao excluir paciente: " + (data.msg || "Erro desconhecido."));
+                    }
+                })
+                .catch(error => {
+                    //console.error('Erro ao excluir paciente:', error);
+                    //alert("Erro ao excluir paciente. Tente novamente mais tarde.");
+                });
+            window.location.reload();
+        }
+
+
+        if (localStorage.getItem("papel") === "medico") {
+            carregarDetalhesMedico(localStorage.getItem("token"), 1);
+            document.getElementById("btnChat").style.display = "block";
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        carregarPacientes();
+
+        function irparadiagnostico(cpf) {
+            localStorage.setItem('cpfSelecionado', cpf);
+            window.location.href = "fichaPaciente.html";
+        }
+
+        function irparaficha(cpf) {
+            localStorage.setItem('cpfSelecionado', cpf);
+            window.location.href = "fichaPaciente.html";
+        }
+
+        function filtrarPacientes() {
+            const valorFiltro = document.getElementById("filtro").value;
+            carregarPacientes(1, valorFiltro);
+        }
+
+        let nome;
+        if (localStorage.getItem("nome_login")) {
+            nome = localStorage.getItem("nome_login");
+        }
+
+        if (nome) {
+            document.getElementById("boasVindas").innerText = `Bem-vindo, ${nome}`;
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", function () {
+            localStorage.clear();
+            window.location.href = "../index.html";
+        });
+
+
+        let cpfSelecionado = "";
+
+        // Função para abrir sidebar e preencher com dados do paciente
+        function atualizarPaciente(cpf) {
+            cpfSelecionado = cpf;
+            localStorage.setItem('cpfSelecionado', cpf); // salva CPF no localStorage
+
+            fetch(`/paciente/cpf/${cpf}`, {
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.pacientes && data.pacientes.length > 0) {
+                        const p = data.pacientes[0]; // acessa o primeiro paciente do array
+
+                        document.getElementById("nome").value = p.nome || "";
+                        document.getElementById("cpf").value = p.cpf || "";
+                        document.getElementById("cpf").disabled = true;
+                        document.getElementById("sexo").value = p.sexo || "";
+                        document.getElementById("endereco").value = p.endereco || "";
+                        document.getElementById("telefone").value = p.telefone || "";
+                        document.getElementById("email").value = p.email || "";
+                        document.getElementById("profissao").value = p.profissao || "";
+                        document.getElementById("estadoCivil").value = p.estado_civil || "";
+                        document.getElementById("nomeCuidador").value = p.nome_cuidador || "";
+                        document.getElementById("telefoneCuidador").value = p.telefone_cuidador || "";
+
+                        document.getElementById("sidebarPaciente").classList.add("active");
+                    } else {
+                        alert("Erro: paciente não encontrado!");
+                    }
+                })
+                .catch(err => console.error("Erro ao buscar paciente:", err));
+        }
+
+
+        function atualizarPacienteConfirmar() {
+            if (!cpfSelecionado) {
+                alert("Nenhum paciente selecionado.");
+                return;
+            }
+
+            const dadosAtualizados = {
+                nome: document.getElementById("nome").value,
+                sexo: document.getElementById("sexo").value,
+                endereco: document.getElementById("endereco").value,
+                telefone: document.getElementById("telefone").value,
+                email: document.getElementById("email").value,
+                profissao: document.getElementById("profissao").value,
+                estado_civil: document.getElementById("estadoCivil").value,
+                nome_cuidador: document.getElementById("nomeCuidador").value,
+                telefone_cuidador: document.getElementById("telefoneCuidador").value,
+            };
+
+            fetch(`/paciente/${cpfSelecionado}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token,
+                },
+                body: JSON.stringify(dadosAtualizados),
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.cod === 200) {
+                        alert("Paciente atualizado com sucesso!");
+                        fecharSidebar();
+                        carregarDetalhesMedico(token); // Recarrega a tabela
+                    } else {
+                        alert("Erro ao atualizar paciente: " + (data.msg || "Erro desconhecido."));
+                    }
+                })
+                .catch(err => console.error("Erro ao atualizar:", err));
+        }
+
+        function fecharSidebar() {
+            document.getElementById("sidebarPaciente").classList.remove("active");
+            cpfSelecionado = "";
+        }
+
+
+    </script>
+</body>
+
+</html>

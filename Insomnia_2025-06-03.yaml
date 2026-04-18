@@ -1,0 +1,856 @@
+type: collection.insomnia.rest/5.0
+name: test_tcc
+meta:
+  id: wrk_b4c63131be2d4edd8f7eb7ecb95f67a0
+  created: 1748301156025
+  modified: 1748301156025
+collection:
+  - name: Paciente
+    meta:
+      id: fld_be90faf6fe514d2cbd1123b27edc99c3
+      created: 1748301183800
+      modified: 1748984285722
+      sortKey: -1748301183800
+    children:
+      - url: http://localhost:8080/paciente
+        name: /paciente
+        meta:
+          id: req_33f343a5ee4a42f0a71221b239fb5b42
+          created: 1748301186919
+          modified: 1748984946928
+          isPrivate: false
+          sortKey: -1748303032887
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_bbef603f17944e6092339595b7b76ec5
+          - id: pair_bf5af7598a90438f9131fc017e08a2e0
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/paciente/12345678900
+        name: /paciente/cpf
+        meta:
+          id: req_b68f0cc0cdc9418189bcd56e35567367
+          created: 1748301585287
+          modified: 1748984968806
+          isPrivate: false
+          sortKey: -1748303032849.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_e04945ca04d540ee9000fe478713da65
+          - id: pair_2472640c43fb41d59e7ab7a8b93acf77
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/paciente/12345678900
+        name: /paciente/cpf
+        meta:
+          id: req_6f3d888eb5cd45f3845b119b5da13383
+          created: 1748301602073
+          modified: 1748984959243
+          isPrivate: false
+          sortKey: -1748303032862
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"sexo": "M",
+              "endereco": "Rua das Flores, 321",
+              "telefone": "11999999999",
+              "email": "maria@example.com",
+              "profissao": "Professora",
+              "estado_civil": "Casado",
+              "nome_cuidador": "João da Silva",
+              "telefone_cuidador": "11988888888"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_5b42dbcbae5b4d1db02eadc46c738315
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_51757f8822f24a00a63db3ce1e58e723
+          - id: pair_4c71dbed6e584fd68119809a40763cdd
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/paciente
+        name: /paciente
+        meta:
+          id: req_7bbd4c3f518c4c3c9c2ee6754ee069fe
+          created: 1748301613480
+          modified: 1748986468558
+          isPrivate: false
+          sortKey: -1748303032937
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "cpf": "12345678901",
+              "nome": "Murilo Lima",
+              "sexo": "F",
+              "endereco": "Rua das Flores, 123",
+              "telefone": "11999999999",
+              "email": "maria@example.com",
+              "profissao": "Professora",
+              "estado_civil": "Solteira",
+              "nome_cuidador": "João da Silva",
+              "telefone_cuidador": "11988888888"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_29d15ddec6a1450bb5ad8bbbebcc5aed
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_d321f1fd71e14150a581d7b016f2daa8
+          - id: pair_319f9ff2dee2475d9385469a9fc85bd8
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4OTg2Mzg5LCJleHAiOjE3NTE1NzgzODksIm5iZiI6MTc0ODk4NjM4OSwianRpIjoiZTRhOWI1NzE4NmIwNTU5NTZiZjY1MDRlNDA0NDNjZmEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDEiLCJwYXBlbCI6Im1lZGljbyJ9.ydOG-voAVJ4DYZmlZeYfGH1KRceAQcLqKtSpnguAP9Q
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/paciente/12345678902
+        name: /paciente/cpf
+        meta:
+          id: req_85981e02fedd4fe995ceeba9b0164a06
+          created: 1748301616273
+          modified: 1748984978645
+          isPrivate: false
+          sortKey: -1748303032837
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_d0d6c20044ed4e8ba750884b882594d7
+          - id: pair_023ffb51d2f74b5aacd31fae0fdefc72
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Ficha
+    meta:
+      id: fld_2190638d595e4f24b9c0428d1c86950c
+      created: 1748303077063
+      modified: 1748476802707
+      sortKey: -1748303077063
+    children:
+      - url: http://localhost:8080/ficha
+        name: /ficha
+        meta:
+          id: req_d0b03748cc4c44b39effb01aa61ac2aa
+          created: 1748303153540
+          modified: 1748986530985
+          isPrivate: false
+          sortKey: -1748303140541
+        method: DELETE
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "cpf": "12345678901"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_2d506538ff9249e0b52de0446c499079
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_855243f92d894aa18d614de47fb6870c
+          - id: pair_6cd4a107bf7248f4999d12f960f300d1
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4OTg2Mzg5LCJleHAiOjE3NTE1NzgzODksIm5iZiI6MTc0ODk4NjM4OSwianRpIjoiZTRhOWI1NzE4NmIwNTU5NTZiZjY1MDRlNDA0NDNjZmEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDEiLCJwYXBlbCI6Im1lZGljbyJ9.ydOG-voAVJ4DYZmlZeYfGH1KRceAQcLqKtSpnguAP9Q
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/ficha
+        name: /ficha
+        meta:
+          id: req_3e8d2549c7554a6b855d33d6bf2d0e1d
+          created: 1748303155283
+          modified: 1748985015747
+          isPrivate: false
+          sortKey: -1748303140641
+        method: GET
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "cpf": "12345678901"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_7ea9c615f6cf426984afca8604969f58
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_e41a5f09c9a343a5b51f03390b8df5a0
+          - id: pair_a6392a045d874cbb96d974d098a4c842
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/ficha
+        name: /ficha
+        meta:
+          id: req_a5fb48a59f544d64b9bd02b2f2c051a7
+          created: 1748303159157
+          modified: 1748986509127
+          isPrivate: false
+          sortKey: -1748303140741
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+                "cpf": "12345678901",
+                "sintomas": {
+                    "iniciais": "Dor de cabeça, cansaço",
+                    "atuais": "Dores nas articulações, dificuldade de concentração",
+                    "fadiga": "Sim",
+                    "problema_visao": "Sim",
+                    "problema_equilibrio": "Não",
+                    "problema_coordenacao": "Sim",
+                    "espaticidade": "Leve",
+                    "fraqueza_muscular": "Moderada",
+                    "problema_sensibilidade": "Não",
+                    "problema_bexiga": "Sim",
+                    "problema_intestino": "Não",
+                    "problema_cognitivo": "Leve dificuldade de memória",
+                    "problema_emocional": "Ansiedade"
+                },
+                "diagnostico": {
+                    "data_diagnostico": "2025-05-01",
+                    "tipo_em": "Relapsante-remitente",
+                    "surtos": "2"
+                },
+                "exame_fisico": {
+                    "exame_neurologico": "Normal",
+                    "forca_muscular": "Boa",
+                    "reflexos": "Hiperreflexia",
+                    "coordenacao": "Normal",
+                    "sensibilidade": "Alterada",
+                    "equilibrio": "Normal",
+                    "funcao_visual": "Boa",
+                    "outros_exames_fisicos": "Sem alterações"
+                },
+                "exames_complementares": {
+                    "rm_cerebro_medula": "Normal",
+                    "potenciais_evocados_visuais": "Alterados",
+                    "potenciais_evocados_somatossensoriais": "Normais",
+                    "potenciais_evocados_auditivos_de_tronco_encefalico": "Normais",
+                    "analise_liquido_cefalorraquidiano": "Sem alteração",
+                    "outros_exames": "Nenhum"
+                },
+                "historico_medico": {
+                    "medicamento_em_uso": "Interferon beta",
+                    "tratamentos_anteriores": "Imunossupressores",
+                    "alergias": "Nenhuma",
+                    "historico_outras_doencas": "Hipertensão",
+                    "historico_familiar": "Pai com histórico de AVC"
+                },
+                "historico_social": {
+                    "tabagismo": "Não",
+                    "alcool": "Socialmente",
+                    "atividade_fisica": "Sim",
+                    "suporte_social": "Boa rede de apoio",
+                    "impacto_profissional_social": "Leve impacto no trabalho"
+                },
+                "plano_tratamento": {
+                    "medicamentos_modificadores_doenca": "Sim, imunomoduladores",
+                    "tratamento_surtos": "Corticóides",
+                    "tratamento_sintomas": "Fisioterapia",
+                    "reabilitacao": "Sim",
+                    "acompanhamento_psicologico": "Sim",
+                    "outras_terapias": "Nenhuma"
+                },
+                "qualidade_vida_em": {
+                    "edss": "3",
+                    "questionario_msqol54": "Boa",
+                    "outras_avaliacoes": "Nenhuma"
+                }
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_b5faad3569e34728ab5607a879cc00bc
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_404a97ecc6af4100a6b9cb5d7b6bddd3
+          - id: pair_ba76f7f7799145ffad6e3ebc0f57525d
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4OTg2Mzg5LCJleHAiOjE3NTE1NzgzODksIm5iZiI6MTc0ODk4NjM4OSwianRpIjoiZTRhOWI1NzE4NmIwNTU5NTZiZjY1MDRlNDA0NDNjZmEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDEiLCJwYXBlbCI6Im1lZGljbyJ9.ydOG-voAVJ4DYZmlZeYfGH1KRceAQcLqKtSpnguAP9Q
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/ficha
+        name: /ficha
+        meta:
+          id: req_85e8b6eb2ef1403d95e6bfe67e91f9a4
+          created: 1748475992346
+          modified: 1748985035770
+          isPrivate: false
+          sortKey: -1748303140841
+        method: PUT
+        body:
+          mimeType: application/json
+          text: >
+            {
+              "cpf": "12345678901",
+              "sintomas": {
+                "iniciais": "Dormência nas pernas",
+                "atuais": "Fraqueza muscular persistente",
+                "fadiga": true,
+                "problema_visao": "Visão turva",
+                "problema_equilibrio": true,
+                "problema_coordenacao": false,
+                "espaticidade": true,
+                "fraqueza_muscular": true,
+                "problema_sensibilidade": "Sensação de formigamento",
+                "problema_bexiga": false,
+                "problema_intestino": false,
+                "problema_cognitivo": "Dificuldade de concentração",
+                "problema_emocional": "Ansiedade"
+              },
+              "diagnostico": {
+                "data_diagnostico": "2020-05-15",
+                "tipo_em": "Remitente-recorrente",
+                "surtos": "3 surtos desde o diagnóstico"
+              },
+              "exame_fisico": {
+                "exame_neurologico": "Reflexos reduzidos em membros inferiores",
+                "forca_muscular": "4/5 nos membros inferiores",
+                "reflexos": "Reduzidos",
+                "coordenacao": "Leve dismetria",
+                "sensibilidade": "Diminuída",
+                "equilibrio": "Comprometido em pé com olhos fechados",
+                "funcao_visual": "Redução leve da acuidade",
+                "outros_exames_fisicos": "Nenhum adicional"
+              },
+              "exames_complementares": {
+                "rm_cerebro_medula": "Lesões desmielinizantes evidentes",
+                "potenciais_evocados_visuais": "Latência aumentada",
+                "potenciais_evocados_somatossensoriais": "Resposta reduzida em MMII",
+                "potenciais_evocados_auditivos_de_tronco_encefalico": "Normais",
+                "analise_liquido_cefalorraquidiano": "Bandas oligoclonais presentes",
+                "outros_exames": "Sorologias negativas"
+              },
+              "historico_medico": {
+                "medicamento_em_uso": "Interferon beta-1a",
+                "tratamentos_anteriores": "Corticóides em surtos",
+                "alergias": "Nenhuma conhecida",
+                "historico_outras_doencas": "Hipotireoidismo",
+                "historico_familiar": "Avô materno com esclerose múltipla"
+              },
+              "historico_social": {
+                "tabagismo": "Não fumante",
+                "alcool": "Socialmente",
+                "atividade_fisica": "Exercício leve 3x por semana",
+                "suporte_social": "Família e grupo de apoio",
+                "impacto_profissional_social": "Redução da carga horária no trabalho"
+              },
+              "plano_tratamento": {
+                "medicamentos_modificadores_doenca": "Natalizumabe",
+                "tratamento_surtos": "Metilprednisolona endovenosa",
+                "tratamento_sintomas": "Baclofeno para espasticidade",
+                "reabilitacao": "Fisioterapia motora e ocupacional",
+                "acompanhamento_psicologico": "Sessões semanais com psicólogo",
+                "outras_terapias": "Terapia ocupacional"
+              },
+              "qualidade_vida_em": {
+                "edss": "3.5",
+                "questionario_msqol54": "Moderado impacto na qualidade de vida",
+                "outras_avaliacoes": "Avaliação neuropsicológica planejada"
+              }
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_ebd3b569585e47a2b88c8d2242e88bad
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_17c204428ad14e61b32fea2386492d70
+          - id: pair_8a5d465b1ea5416e8dbb9ee23243590a
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Medico
+    meta:
+      id: fld_e655ed1c574c4b979c30a89b6f71dfe7
+      created: 1748544865293
+      modified: 1748548494946
+      sortKey: -1748544865293
+    children:
+      - url: http://localhost:8080/medico/crm/123456
+        name: /medico/crm/+crm
+        meta:
+          id: req_010e209cd5b640429fefe74d375e3cf2
+          created: 1748544869522
+          modified: 1748985180376
+          isPrivate: false
+          sortKey: -1748548467663
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_b0ae65d76c124a2eb53757101a1d19bf
+          - id: pair_26661721566548bf8067b20424f6d8bb
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4NTQ1NTI1LCJleHAiOjE3NTExMzc1MjUsIm5iZiI6MTc0ODU0NTUyNSwianRpIjoiNTUzZmNlOTA5NjdhYzYwMmI0MzE5ZjBiMWIzZGJiMTEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDFzZW5oYSJ9.jcxoOwgq6myyrjk4lD643DbdNb-OGxzHaeU8uY7cqy0
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/medico/cpf/12345678911
+        name: /medico/cpf/+cpf
+        meta:
+          id: req_defef46088984fc6926138a659269812
+          created: 1748544872810
+          modified: 1748548487640
+          isPrivate: false
+          sortKey: -1748548467763
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_f3e8e71103e2464cbeb5f49073995305
+          - id: pair_aa26a2d9ca8b436d847fef63af7d9a95
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4NTQ1NTI1LCJleHAiOjE3NTExMzc1MjUsIm5iZiI6MTc0ODU0NTUyNSwianRpIjoiNTUzZmNlOTA5NjdhYzYwMmI0MzE5ZjBiMWIzZGJiMTEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDFzZW5oYSJ9.jcxoOwgq6myyrjk4lD643DbdNb-OGxzHaeU8uY7cqy0
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/medico
+        name: /medico
+        meta:
+          id: req_42c0d04d857f4bb3b4cf9418c66cbaad
+          created: 1748544883312
+          modified: 1748548489831
+          isPrivate: false
+          sortKey: -1748548467863
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_0a171019934b4709b90e343927dc5d42
+          - id: pair_03d5a5831ee14f67b341c6f95f93a21e
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4NTQ1NTI1LCJleHAiOjE3NTExMzc1MjUsIm5iZiI6MTc0ODU0NTUyNSwianRpIjoiNTUzZmNlOTA5NjdhYzYwMmI0MzE5ZjBiMWIzZGJiMTEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDFzZW5oYSJ9.jcxoOwgq6myyrjk4lD643DbdNb-OGxzHaeU8uY7cqy0
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/medico/login
+        name: /medico/login
+        meta:
+          id: req_0f6ce6b62dae4e6da67f3e70f46b25b6
+          created: 1748544885008
+          modified: 1748986388346
+          isPrivate: false
+          sortKey: -1748548467563
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            	{
+            		"email": "medico01@gmail.com",
+            		"senha": "medico01"	
+            	}
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_a06452dfdf1048b0bdc0a9e0e1023eb5
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_b94364e0750f4e338d0f17edbe25cf84
+          - id: pair_c3006e4c2b84461da1ee114f12fa0e24
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/medico
+        name: /medico
+        meta:
+          id: req_982a35eb93eb4453a80ef1b3fea14e22
+          created: 1748544886609
+          modified: 1748986207913
+          isPrivate: false
+          sortKey: -1748548467463
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"cpf": "12345678911",
+            	"crm": "123456",
+            	"email": "medico01@gmail.com",
+            	"senha": "medico01",
+            	"nome": "medico1"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_364ef49b30e943e58b6c0761beb1c1ad
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_61082fdaa2a542feab3a46d7c2780c27
+          - id: pair_a42cacaeb7c3413a832b56321423061b
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4OTg2MTUzLCJleHAiOjE3NTE1NzgxNTMsIm5iZiI6MTc0ODk4NjE1MywianRpIjoiODQ0MDRjNzM1NzIzZWQzZTZlZDk1ZTE5YzFhZGEwMzgiLCJlbWFpbCI6ImFkbTFAZ21haWwuY29tIiwic2VuaGEiOiJhZG0wMSIsInBhcGVsIjoiYWRtIn0.5eBK4ykVeyk_YNsVe0K7npvMHQFckUpfv8bNKoP1Ofc
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/medico/12345678911
+        name: /medico/cpf
+        meta:
+          id: req_d58d2b4249b94e07ab25189cb3b36f8e
+          created: 1748548064489
+          modified: 1748986251620
+          isPrivate: false
+          sortKey: -1748548467363
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            			{
+            				"crm": "123456",
+            				"email": "medico01@gmail.com",
+            				"senha": "medico01",
+            				"nome": "medico01alterado"
+            			}
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_cf3268e698644597b7ea13af122014f9
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_2eca817a530443cdac50950ff7bac2b8
+          - id: pair_b1b937562565427cb8c3e0fca15fad03
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4OTg2MTUzLCJleHAiOjE3NTE1NzgxNTMsIm5iZiI6MTc0ODk4NjE1MywianRpIjoiODQ0MDRjNzM1NzIzZWQzZTZlZDk1ZTE5YzFhZGEwMzgiLCJlbWFpbCI6ImFkbTFAZ21haWwuY29tIiwic2VuaGEiOiJhZG0wMSIsInBhcGVsIjoiYWRtIn0.5eBK4ykVeyk_YNsVe0K7npvMHQFckUpfv8bNKoP1Ofc
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/medico/12345678911
+        name: /medico/+cpf
+        meta:
+          id: req_ee9b4595d65e485b8fbfa499fa3351c3
+          created: 1748548415107
+          modified: 1748986411789
+          isPrivate: false
+          sortKey: -1748548467263
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_693515e874ff4eb3b93aa771d5733afd
+          - id: pair_105490a62a734f31aa4672ce981c241a
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4OTg2Mzg5LCJleHAiOjE3NTE1NzgzODksIm5iZiI6MTc0ODk4NjM4OSwianRpIjoiZTRhOWI1NzE4NmIwNTU5NTZiZjY1MDRlNDA0NDNjZmEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDEiLCJwYXBlbCI6Im1lZGljbyJ9.ydOG-voAVJ4DYZmlZeYfGH1KRceAQcLqKtSpnguAP9Q
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: administrador
+    meta:
+      id: fld_b9fd6236a437403fa155d1e9c541a80a
+      created: 1748984430681
+      modified: 1748984430681
+      sortKey: -1748984430681
+    children:
+      - url: http://localhost:8080/adm
+        name: /adm
+        meta:
+          id: req_b566d634c04344d4984a7a87af9bac2c
+          created: 1748984293852
+          modified: 1748985641860
+          isPrivate: false
+          sortKey: -1748984434420
+        method: GET
+        body:
+          mimeType: application/json
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_4d1bcd9ee0b8423697b192b809893054
+          - id: pair_11790a9ef6034233990d0577002c549f
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/adm
+        name: /adm
+        meta:
+          id: req_59de9dae405b4682aaa6130842586665
+          created: 1748984333323
+          modified: 1748985683293
+          isPrivate: false
+          sortKey: -1748984434320
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "",
+            	"email": "",
+            	"senha": ""
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_238ea21abaa743d3bacfacd2dd3b5221
+          - id: pair_27913f42264e4a088e389861d660b118
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/adm/login
+        name: /adm/login
+        meta:
+          id: req_b5a234e243894945a9ae0b34cb8b50eb
+          created: 1748984354068
+          modified: 1748986047657
+          isPrivate: false
+          sortKey: -1748984434220
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"email": "adm1@gmail.com",
+            	"senha": "adm01"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.1.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/adm
+        name: /adm
+        meta:
+          id: req_9e4addb8b72d490fa1729b0d3c774e8c
+          created: 1748984390445
+          modified: 1748985680401
+          isPrivate: false
+          sortKey: -1748984434120
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"id": "",
+            	"nome": "",
+            	"email": "",
+            	"senha": ""
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_3678e0d3ae4044c19521119ada655972
+          - id: pair_7c80fccd3aed4dd79f0433e4839c850b
+            name: Authorization
+            value: "Bearer "
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/adm
+        name: /adm
+        meta:
+          id: req_43c377b33c834a89bf27596b8a273e0a
+          created: 1748984405247
+          modified: 1748986402082
+          isPrivate: false
+          sortKey: -1748984434020
+        method: DELETE
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"id": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_e7f311619f874b3f9f242aad6efb2053
+          - name: User-Agent
+            value: insomnia/11.1.0
+            id: pair_cfa7903dc05c41f88b07839fc201dd17
+          - id: pair_c20f7d3fd23042e2a67b2a79268c75ec
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdCIsInN1YiI6ImFjZXNzb19zaXN0ZW1hIiwiaWF0IjoxNzQ4OTg2Mzg5LCJleHAiOjE3NTE1NzgzODksIm5iZiI6MTc0ODk4NjM4OSwianRpIjoiZTRhOWI1NzE4NmIwNTU5NTZiZjY1MDRlNDA0NDNjZmEiLCJlbWFpbCI6Im1lZGljbzAxQGdtYWlsLmNvbSIsInNlbmhhIjoibWVkaWNvMDEiLCJwYXBlbCI6Im1lZGljbyJ9.ydOG-voAVJ4DYZmlZeYfGH1KRceAQcLqKtSpnguAP9Q
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_2e4a8b38292e1ca88f52bfeb5a0952d16a7672dc
+    created: 1748301156029
+    modified: 1748301156029
+environments:
+  name: Base Environment
+  meta:
+    id: env_2e4a8b38292e1ca88f52bfeb5a0952d16a7672dc
+    created: 1748301156027
+    modified: 1748301156027
+    isPrivate: false

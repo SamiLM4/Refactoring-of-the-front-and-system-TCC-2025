@@ -1,0 +1,432 @@
+/* ============================
+   Variáveis Globais (Paleta)
+   ============================ */
+/* ======================== PALETA 7: Rosa Suave ======================== */
+:root {
+  --cor-fundo: #F8FAFC;
+
+  --cor-sidebar: #2c3e50;
+  --cor-sidebar-borda: #0C4A6E;
+  --cor-sidebar-titulo: #FFFFFF;
+  --cor-sidebar-subtitulo: #38BDF8;
+  --cor-sidebar-hover-bg: #0A3B58;
+  --cor-sidebar-hover-texto: #38BDF8;
+
+  --cor-texto-principal: #075985;
+  --cor-texto-secundario: #0EA5E9;
+
+  --cor-texto-destaque: #fafcf8;
+  
+  --cor-texto-tabela: #075985;
+  --cor-texto-tabela-hover: #0EA5E9;
+
+  --cor-tabela-fundo: #FFFFFF;
+  --cor-tabela-header: #075985;
+  --cor-tabela-borda: #075985;
+  --cor-tabela-header-texto: #FFFFFF;
+
+  --cor-botao: #075985;
+  --cor-botao-texto: #FFFFFF;
+  --cor-botao-desabilitado: #CBD5E1;
+  --cor-botao-gradiente-inicio: #075985;
+  --cor-botao-gradiente-fim: #0EA5E9;
+  --cor-botao-gradiente-hover-inicio: #064E6C;
+  --cor-botao-gradiente-hover-fim: #38BDF8;
+  --cor-botao-excluir-inicio: #DC2626;
+  --cor-botao-excluir-fim: #B91C1C;
+  --cor-botao-excluir-hover-inicio: #B91C1C;
+  --cor-botao-excluir-hover-fim: #991B1B;
+
+  --cor-input-fundo: #FFFFFF;
+  --cor-input-borda: #075985;
+  --cor-input-texto: #075985;
+  --cor-input-focus: #0EA5E9;
+
+  --cor-scrollbar-thumb: #075985;
+  --cor-scrollbar-track: #E5E7EB;
+  
+  --cor-link: #0EA5E9;
+  --cor-link-hover: #075985;
+
+  --cor-scroll-bar-ficha: #c0c0c0 transparent;
+}
+
+
+
+
+/* Responsividade da tabela */
+@media (max-width: 768px) {
+
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    margin-bottom: 15px;
+    border: 1px solid var(--cor-tabela-borda);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--cor-tabela-fundo);
+  }
+
+  td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+    border: none;
+    border-bottom: 1px solid var(--cor-tabela-borda);
+  }
+
+  td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 15px;
+    width: 45%;
+    text-align: left;
+    font-weight: bold;
+    color: var(--cor-texto-secundario);
+  }
+}
+
+
+/* ============================
+   Estilo Global
+   ============================ */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto-principal);
+  display: flex;
+}
+
+/* ============================
+   Sidebar Esquerda
+   ============================ */
+.sidebar {
+  width: 240px;
+  background-color: var(--cor-sidebar);
+  padding: 30px 20px;
+  height: 100vh;
+  box-shadow: 2px 0 8px var(--cor-sombra-sidebar);
+  border-right: 1px solid var(--cor-sidebar-borda);
+}
+
+.sidebar h2 {
+  color: var(--cor-sidebar-titulo);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.sidebar a {
+  color: var(--cor-sidebar-subtitulo);
+  text-decoration: none;
+  display: block;
+  margin: 12px 0;
+  padding: 10px 15px;
+  border-radius: 6px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar a:hover {
+  background-color: var(--cor-sidebar-hover-bg);
+  color: var(--cor-sidebar-hover-texto);
+}
+
+/* ============================
+   Sidebar Direita (modal)
+   ============================ */
+.sidebar-right {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 90%;
+  max-width: 450px;
+  max-height: 90vh;
+  background-color: var(--cor-sidebar);
+  color: var(--cor-texto-destaque);
+  box-shadow: 0 0 15px var(--cor-sombra-sidebar-right);
+  padding: 25px;
+  overflow-y: auto;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.3s ease;
+  z-index: 9999;
+  border-radius: 12px;
+}
+
+.sidebar-right.active {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.sidebar-right input,
+.sidebar-right select {
+  width: 97%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--cor-input-borda);
+  background-color: var(--cor-input-fundo);
+  color: var(--cor-input-texto);
+  font-size: 14px;
+}
+
+.sidebar-right input:focus,
+.sidebar-right select:focus {
+  border-color: var(--cor-input-focus);
+  outline: none;
+}
+
+.sidebar-right button {
+  margin: 10px 10px 10px 0;
+}
+
+.sidebar-right {
+  scrollbar-color: var(--cor-scroll-bar-ficha); /* thumb vermelho, trilho transparente */
+}
+
+/* Campos em grid */
+.sidebar-right form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.sidebar-right label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.sidebar-right .botoes-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+/* ============================
+   Botão Cadastrar Paciente
+   ============================ */
+#btnCadastrarPaciente {
+  background: linear-gradient(45deg, var(--cor-botao-gradiente-inicio), var(--cor-botao-gradiente-fim));
+  color: var(--cor-botao-texto);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 20px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+#btnCadastrarPaciente:hover {
+  background: linear-gradient(45deg, var(--cor-botao-gradiente-hover-inicio), var(--cor-botao-gradiente-hover-fim));
+  box-shadow: 0 0 8px var(--cor-sombra-botao-hover);
+}
+
+/* ============================
+   Conteúdo principal
+   ============================ */
+.main-content {
+  flex: 1;
+  padding: 40px;
+  background-color: var(--cor-fundo);
+}
+
+/* ============================
+   Filtro e botão de busca
+   ============================ */
+.filtro-container {
+  display: flex;
+  justify-content: flex-end;
+  margin: 10px 0;
+}
+
+.filtro-container input {
+  padding: 8px;
+  width: 300px;
+  border-radius: 5px 0 0 5px;
+  border: 1px solid var(--cor-input-borda);
+  border-right: none;
+  background-color: var(--cor-input-fundo);
+  color: var(--cor-input-texto);
+}
+
+.filtro-container button {
+  padding: 8px 16px;
+  border-radius: 0 5px 5px 0;
+  border: 1px solid var(--cor-input-borda);
+  background-color: var(--cor-botao);
+  color: var(--cor-botao-texto);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.filtro-container button:hover {
+  background-color: var(--cor-botao-hover);
+}
+
+/* ============================
+   Tabela
+   ============================ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  background-color: var(--cor-tabela-fundo);
+  box-shadow: 0 2px 8px var(--cor-sombra-tabela);
+  border: 1px solid var(--cor-tabela-borda);
+}
+
+th,
+td {
+  border: 1px solid var(--cor-tabela-borda);
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--cor-texto-destaque);
+}
+
+th {
+  background-color: var(--cor-tabela-header);
+  color: var(--cor-tabela-header-texto);
+  font-weight: 600;
+}
+
+.texto-tabela {
+  color: var(--cor-texto-tabela);
+}
+
+tr:hover .texto-tabela {
+  color: var(--cor-texto-tabela-hover);
+}
+
+
+/* ============================
+   Botões Gerais
+   ============================ */
+button {
+  background: linear-gradient(45deg, var(--cor-botao-gradiente-inicio), var(--cor-botao-gradiente-fim));
+  color: var(--cor-botao-texto);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(45deg, var(--cor-botao-gradiente-hover-inicio), var(--cor-botao-gradiente-hover-fim));
+  box-shadow: 0 2px 6px var(--cor-sombra-botao-hover);
+}
+
+
+/* Botão Excluir */
+button.btn-excluir {
+  background: linear-gradient(45deg, var(--cor-botao-excluir-inicio), var(--cor-botao-excluir-fim));
+}
+
+button.btn-excluir:hover {
+  background: linear-gradient(45deg, var(--cor-botao-excluir-hover-inicio), var(--cor-botao-excluir-hover-fim));
+  box-shadow: 0 2px 6px var(--cor-sombra-botao-hover);
+}
+
+/* Botão Selecionar */
+button.btn-selecionar {
+  background: linear-gradient(45deg, var(--cor-botao-selecionar), var(--cor-botao-selecionar-hover));
+}
+
+button.btn-selecionar:hover {
+  background: linear-gradient(45deg, var(--cor-botao-selecionar-hover), var(--cor-botao-selecionar));
+  box-shadow: 0 2px 6px var(--cor-sombra-botao-hover);
+}
+
+/* ============================
+   Detalhes do Paciente
+   ============================ */
+#detalhesPaciente {
+  background-color: var(--cor-tabela-fundo);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--cor-tabela-borda);
+  box-shadow: 0 0 12px var(--cor-sombra-tabela);
+  color: var(--cor-texto-destaque);
+}
+
+/* ============================
+   Paginação
+   ============================ */
+#paginacao {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#paginacao button {
+  background-color: var(--cor-botao);
+  color: var(--cor-botao-texto);
+  border: none;
+  margin: 0 4px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 38px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#paginacao button:not(:disabled):not(.active) {
+  background: linear-gradient(45deg, var(--cor-botao-gradiente-inicio), var(--cor-botao-gradiente-fim));
+  color: var(--cor-botao-texto);
+}
+
+#paginacao button:not(:disabled):not(.active):hover {
+  background: linear-gradient(45deg, var(--cor-botao-gradiente-hover-inicio), var(--cor-botao-gradiente-hover-fim));
+  box-shadow: 0 2px 6px var(--cor-sombra-botao-hover);
+}
+
+#paginacao button.active,
+#paginacao button:disabled {
+  background-color: var(--cor-botao-desabilitado);
+  color: var(--cor-texto-secundario);
+  font-weight: 700;
+  box-shadow: 0 0 8px var(--cor-sombra-botao);
+  border: 2px solid var(--cor-tabela-borda);
+  cursor: default;
+}
+
+#paginacao button:first-child,
+#paginacao button:last-child {
+  font-weight: 700;
+  font-size: 16px;
+  padding: 6px 12px;
+}
+
+/* ============================
+   Scrollbar Custom
+   ============================ */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cor-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cor-scrollbar-thumb);
+  border-radius: 5px;
+}

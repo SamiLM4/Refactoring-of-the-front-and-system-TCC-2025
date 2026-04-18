@@ -1,0 +1,381 @@
+/* ==============================
+   Variáveis de Cores
+   ============================== */
+:root {
+  /* Fundo geral */
+  --cor-fundo: #F8FAFC;
+
+  /* Sidebars */
+  --cor-sidebar: #0C4A6E;
+  --cor-sidebar-borda: #0C4A6E;
+  --cor-sidebar-titulo: #FFFFFF;
+  --cor-sidebar-subtitulo: #38BDF8;
+  --cor-sidebar-link: #FFFFFF;
+  --cor-sidebar-link-hover-bg: #0A3B58;
+  --cor-sidebar-link-hover-texto: #38BDF8;
+  --cor-sombra-sidebar: rgba(0, 0, 0, 0.3);
+
+  /* Textos */
+  --cor-texto-principal: #075985;
+  --cor-texto-secundario: #0EA5E9;
+  --cor-texto-destaque: #38BDF8;
+
+  /* Conteúdo principal */
+  --cor-main-fundo: #F8FAFC;
+
+  /* Tabela */
+  --cor-tabela-fundo: #FFFFFF;
+  --cor-tabela-texto: #075985;
+  --cor-tabela-header-fundo: #075985;
+  --cor-tabela-header-texto: #FFFFFF;
+  --cor-tabela-borda: #075985;
+  --cor-tabela-hover: #0EA5E9;
+  --cor-tabela-sombra: rgba(0, 0, 0, 0.3);
+  --cor-tabela-header-borda: #075985;
+
+  /* Formulário */
+  --cor-form-fundo: #FFFFFF;
+  --cor-form-texto: #075985;
+  --cor-form-label: #0EA5E9;
+  --cor-form-input-fundo: #FFFFFF;
+  --cor-form-input-borda: #075985;
+  --cor-form-input-texto: #075985;
+  --cor-form-input-focus: #0EA5E9;
+  --cor-form-button-fundo: #075985;
+  --cor-form-button-hover: #0EA5E9;
+  --cor-form-button-texto: #FFFFFF;
+  --cor-form-sombra: rgba(14, 165, 233, 0.3);
+
+  /* Botões específicos */
+  --cor-botao: #075985;
+  --cor-botao-hover: #0EA5E9;
+  --cor-botao-excluir: #DC2626;
+  --cor-botao-excluir-hover: #B91C1C;
+  --cor-botao-selecionar: #075985;
+  --cor-botao-selecionar-hover: #0EA5E9;
+  --cor-botao-paginacao-hover: #0A3B58;
+  --cor-botao-desabilitado: #CBD5E1;
+  --cor-botao-gradiente-inicio: #075985;
+  --cor-botao-gradiente-fim: #0EA5E9;
+  --cor-botao-gradiente-hover-inicio: #064E6C;
+  --cor-botao-gradiente-hover-fim: #38BDF8;
+  --cor-botao-texto: #FFFFFF;
+
+  /* Scrollbar */
+  --cor-scrollbar-thumb: #075985;
+  --cor-scrollbar-track: #E5E7EB;
+
+  /* Sidebar direita */
+  --cor-sombra-sidebar-right: rgba(0, 0, 0, 0.4);
+
+  /* Sombra botão hover */
+  --cor-sombra-botao-hover: rgba(14, 165, 233, 0.5);
+}
+
+
+
+/* ==============================
+   Fonte e base
+   ============================== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--cor-fundo);
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    color: var(--cor-texto-principal);
+}
+
+/* ==============================
+   Sidebar lateral
+   ============================== */
+.sidebar {
+    width: 240px;
+    background-color: var(--cor-sidebar);
+    color: var(--cor-sidebar-link);
+    padding: 30px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--cor-sidebar-borda);
+    box-shadow: 2px 0 8px var(--cor-sidebar-sombra);
+}
+
+.sidebar h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--cor-sidebar-titulo);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar ul li {
+    margin-bottom: 12px;
+}
+
+.sidebar ul li a {
+    color: var(--cor-sidebar-link);
+    text-decoration: none;
+    font-weight: 500;
+    display: block;
+    padding: 10px 15px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    background-color: var(--cor-sidebar-link-hover-bg);
+    color: var(--cor-sidebar-link-hover-texto);
+}
+
+/* ==============================
+   Conteúdo principal
+   ============================== */
+.main-content {
+    flex-grow: 1;
+    background-color: var(--cor-main-fundo);
+    padding: 40px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    color: var(--cor-texto-principal);
+}
+
+.main-content h1,
+.main-content h2 {
+    color: var(--cor-texto-secundario);
+    margin-bottom: 20px;
+}
+
+/* ==============================
+   Dados do médico
+   ============================== */
+#medicoInfo p {
+    font-size: 1.05em;
+    margin: 6px 0;
+}
+
+/* ==============================
+   Tabela de pacientes
+   ============================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--cor-tabela-fundo);
+    color: var(--cor-tabela-texto);
+    border-radius: 8px;
+    box-shadow: 0 0 10px var(--cor-tabela-sombra);
+    overflow: hidden;
+    border: 1px solid var(--cor-tabela-borda);
+}
+
+thead {
+    background-color: var(--cor-tabela-header-fundo);
+}
+
+thead th {
+    padding: 14px;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 2px solid var(--cor-tabela-header-borda);
+    color: var(--cor-tabela-header-texto);
+}
+
+tbody tr:hover {
+    background-color: var(--cor-tabela-hover);
+}
+
+tbody td {
+    padding: 14px;
+    border-bottom: 1px solid var(--cor-tabela-borda);
+}
+
+/* ==============================
+   Formulário de edição
+   ============================== */
+#formEditar {
+    margin: 0 auto;
+    background-color: var(--cor-form-fundo);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 12px var(--cor-form-sombra);
+    max-width: 500px;
+    color: var(--cor-form-texto);
+    font-size: 1em;
+    border: 1px solid var(--cor-tabela-borda);
+}
+
+#formEditar label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--cor-form-label);
+}
+
+#formEditar input {
+    width: 100%;
+    padding: 8px 10px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    border: 1px solid var(--cor-form-input-borda);
+    border-radius: 6px;
+    background-color: var(--cor-form-input-fundo);
+    color: var(--cor-form-texto);
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+#formEditar input:focus {
+    border-color: var(--cor-form-input-focus);
+    outline: none;
+}
+
+#formEditar button {
+    background-color: var(--cor-form-button-fundo);
+    color: var(--cor-form-button-texto);
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#formEditar button:hover {
+    background-color: var(--cor-form-button-hover);
+}
+
+/* ==============================
+   Scroll estilizado
+   ============================== */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+.main-content::-webkit-scrollbar-track {
+    background: var(--cor-scrollbar-track);
+}
+.main-content::-webkit-scrollbar-thumb {
+    background-color: var(--cor-scrollbar-thumb);
+    border-radius: 4px;
+}
+
+/* ==============================
+   Responsividade
+   ============================== */
+@media (max-width: 600px) {
+    body {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+    }
+
+    .sidebar ul {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .sidebar ul li {
+        margin-bottom: 0;
+    }
+
+    .main-content {
+        padding: 20px;
+    }
+
+    table,
+    thead,
+    tbody,
+    tr,
+    td,
+    th {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tbody tr {
+        margin-bottom: 15px;
+        border: 1px solid var(--cor-tabela-header-borda);
+        border-radius: 8px;
+        padding: 10px;
+        background-color: var(--cor-tabela-fundo);
+    }
+
+    tbody td {
+        padding-left: 50%;
+        position: relative;
+        text-align: left;
+        border: none;
+    }
+
+    tbody td::before {
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 700;
+        color: var(--cor-tabela-header-borda);
+    }
+
+    tbody td:nth-of-type(1)::before {
+        content: "CPF";
+    }
+
+    tbody td:nth-of-type(2)::before {
+        content: "Nome";
+    }
+}
+
+
+/* ============================
+   Paginação
+   ============================ */
+   #paginacaoPacientes {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+#paginacaoPacientes button {
+    background-color: var(--cor-botao);
+    color: var(--cor-botao-texto);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+}
+
+#paginacaoPacientes button:hover:not(:disabled) {
+    background-color: var(--cor-botao-gradiente-hover-fim);
+    transform: translateY(-1px);
+}
+
+#paginacaoPacientes button.active,
+#paginacaoPacientes button:disabled {
+    background-color: var(--cor-botao-desabilitado);
+    color: var(--cor-botao-texto);
+    cursor: default;
+    transform: none;
+}

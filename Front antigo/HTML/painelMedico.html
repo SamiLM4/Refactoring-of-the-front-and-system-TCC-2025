@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Médicos</title>
+    <link rel="icon" type="image/jpeg" href="../imagens/logo.jpg">
+    <link rel="stylesheet" href="../CSS/medicos.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>Painel</h2>
+        <ul>
+            <li><a href="painel.html">Voltar ao Painel</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1>Lista de Médicos</h1>
+
+        <!-- Botão de Cadastrar (visível só para ADM) -->
+        <div id="cadastrarMedicoArea" style="display:none; margin-bottom: 15px;">
+            <button onclick="abrirSidebarCadastro()">Cadastrar Médico</button>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin: 10px 0;">
+            <input type="text" id="filtro" placeholder="Filtrar"
+                style="padding: 8px; width: 300px; border-radius: 5px 0 0 5px; border: 1px solid #ccc; border-right: none;" />
+            <button onclick="filtrarMedicos()"
+                style="padding: 8px 16px; border-radius: 0 5px 5px 0; border: 1px solid #ccc; background-color: #007bff; color: white; cursor: pointer;">
+                Buscar
+            </button>
+        </div>
+
+        <table id="tabelaMedicos">
+            <thead>
+                <tr>
+                    <th>CRM</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th id="cpf">CPF</th>
+                    <th id="selecionarMedico">Selecionar</th>
+                    <th id="excluirMedico">Excluir</th>
+                    <th id="colunaChat">Chat</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Conteúdo será carregado via JS -->
+            </tbody>
+        </table>
+        <div id="paginacao" style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+    </div>
+
+    <!-- Sidebar Cadastro Médico -->
+    <div id="sidebarCadastroMedico" class="sidebar-right">
+        <h2 id="tituloSidebar">Cadastrar Médico</h2>
+        <form id="formCadastrarMedico">
+            <label>Nome:</label>
+            <input type="text" id="nomeMedico" required>
+
+            <label>CPF:</label>
+            <input type="text" id="cpfMedico" required>
+
+            <label>CRM:</label>
+            <input type="text" id="crmMedico" required>
+
+            <label>Email:</label>
+            <input type="email" id="emailMedico" required>
+
+            <label>Senha:</label>
+            <input type="password" id="senhaMedico" required>
+
+            <button type="button" onclick="cadastrarMedico()">Salvar Médico</button>
+            <button type="button" onclick="fecharSidebar()">Fechar</button>
+        </form>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Usuário não autenticado. Faça login novamente.");
+            window.location.href = "../login.html";
+        }
+
+        const payload = jwt_decode(token);
+        const papel = payload.papel;
+
+        // Mostrar botão de cadastrar só para ADM
+        if (papel === "adm") {
+            document.getElementById("cadastrarMedicoArea").style.display = "block";
+        } else {
+            document.getElementById("colunaChat").style.display = "none";
+            document.getElementById("cpf").style.display = "none";
+            document.getElementById("selecionarMedico").style.display = "none";
+            document.getElementById("excluirMedico").style.display = "none";
+        }
+
+        let paginaAtual = 1;
+
+        function carregarMedicos(pagina = 1, filtro = "") {
+            paginaAtual = pagina;
+
+            let url;
+            if (filtro != null && filtro != "") {
+                console.log(filtro);
+                url = `/medico/filtro/${encodeURIComponent(filtro)}`;
+            } else {
+                url = `/medico/${pagina}`;
+            }
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const tabelaBody = document.querySelector("#tabelaMedicos tbody");
+                    const paginacao = document.getElementById("paginacao");
+
+                    tabelaBody.innerHTML = "";
+                    paginacao.innerHTML = "";
+
+                    const listaMedicos = data[0]?.medicos || [];
+                    const totalPaginas = Math.ceil((data[0]?.total || 0) / 5);
+
+                    if (listaMedicos.length === 0) {
+                        tabelaBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum médico encontrado.</td></tr>';
+                        return;
+                    }
+
+                    listaMedicos.forEach(medico => {
+                        const row = document.createElement("tr");
+
+                        let excluirBtn = "";
+                        if (papel === "adm") {
+                            excluirBtn = `<button class= "btn-excluir" onclick="excluirMedico('${medico.cpf}')">Excluir</button>`;
+                        }
+
+                        let chatBtn = "";
+                        if (papel === "adm") {
+                            chatBtn = `<td><button onclick="abrirChat('${medico.cpf}')">Chat</button></td>`;
+                        }
+
+                        if (localStorage.getItem("papel") === "medico") {
+                            row.innerHTML = `
+                                            <td>${medico.crm}</td>
+                                            <td>${medico.nome}</td>
+                                            <td>${medico.email}</td>
+                                        `;
+                        } else {
+                            row.innerHTML = `
+                                            <td>${medico.crm}</td>
+                                            <td>${medico.nome}</td>
+                                            <td>${medico.email}</td>
+                                            <td>${medico.cpf}</td>
+                                            <td><button onclick="selecionarMedico('${medico.cpf}')">Selecionar</button></td>
+                                            <td>${excluirBtn}</td>
+                                            ${chatBtn}
+                                        `;
+                        }
+
+                        tabelaBody.appendChild(row);
+                    });
+
+                    const maxBotoesVisiveis = 5;
+                    let startPage = Math.max(1, paginaAtual - Math.floor(maxBotoesVisiveis / 2));
+                    let endPage = startPage + maxBotoesVisiveis - 1;
+
+                    if (endPage > totalPaginas) {
+                        endPage = totalPaginas;
+                        startPage = Math.max(1, endPage - maxBotoesVisiveis + 1);
+                    }
+
+                    // Botão de página anterior
+                    if (paginaAtual > 1) {
+                        const botaoAnterior = document.createElement("button");
+                        botaoAnterior.textContent = "«";
+                        botaoAnterior.onclick = () => carregarMedicos(paginaAtual - 1);
+                        paginacao.appendChild(botaoAnterior);
+                    }
+
+                    // Botões de página numerados
+                    for (let i = startPage; i <= endPage; i++) {
+                        const botao = document.createElement("button");
+                        botao.textContent = i;
+                        botao.classList.toggle("active", i === paginaAtual);
+                        botao.disabled = (i === paginaAtual);
+                        botao.onclick = () => carregarMedicos(i);
+                        paginacao.appendChild(botao);
+                    }
+
+                    // Botão de próxima página
+                    if (paginaAtual < totalPaginas) {
+                        const botaoProximo = document.createElement("button");
+                        botaoProximo.textContent = "»";
+                        botaoProximo.onclick = () => carregarMedicos(paginaAtual + 1);
+                        paginacao.appendChild(botaoProximo);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar médicos:', error);
+                });
+        }
+
+
+        function selecionarMedico(cpf) {
+            localStorage.setItem('cpfMedicoSelecionado', cpf);
+            window.location.href = 'detalhesMedico.html';
+        }
+
+        function abrirChat(cpf) {
+            localStorage.setItem('cpfMedicoSelecionado', cpf);
+            window.location.href = 'chat.html';
+        }
+
+
+        function excluirMedico(cpf) {
+            if (confirm("Tem certeza que deseja excluir este médico?")) {
+                fetch(`/medico/${cpf}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.msg);
+                        carregarMedicos();
+                    })
+                    .catch(error => {
+                        console.error('Erro ao excluir médico:', error);
+                    });
+            }
+        }
+
+        function abrirSidebarCadastro() {
+            document.getElementById("sidebarCadastroMedico").classList.add("active");
+        }
+
+        function fecharSidebar() {
+            document.getElementById("sidebarCadastroMedico").classList.remove("active");
+            limparCampos();
+        }
+
+        function limparCampos() {
+            document.getElementById("nomeMedico").value = "";
+            document.getElementById("cpfMedico").value = "";
+            document.getElementById("crmMedico").value = "";
+            document.getElementById("emailMedico").value = "";
+            document.getElementById("senhaMedico").value = "";
+        }
+
+        function cadastrarMedico() {
+            const medico = {
+                cpf: document.getElementById("cpfMedico").value,
+                crm: document.getElementById("crmMedico").value,
+                email: document.getElementById("emailMedico").value,
+                senha: document.getElementById("senhaMedico").value,
+                nome: document.getElementById("nomeMedico").value
+            };
+
+            fetch("/medico", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(medico)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.cod === 201 || data.cod === 200) {
+                        alert("Médico cadastrado com sucesso!");
+                        fecharSidebar();
+                        carregarMedicos();
+                    } else {
+                        alert("Erro ao cadastrar médico: " + data.msg);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao cadastrar médico:", error);
+                });
+        }
+
+        carregarMedicos();
+
+        function filtrarMedicos() {
+            const valorFiltro = document.getElementById("filtro").value;
+            carregarMedicos(1, valorFiltro); // Chama passando o filtro
+        }
+    </script>
+</body>
+
+</html>
