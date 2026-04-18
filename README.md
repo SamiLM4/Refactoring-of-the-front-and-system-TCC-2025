@@ -1,4 +1,4 @@
-# PROJETO ESTA SENDO MELHORADO
+# VERSAO REFATORADA DO PROJETO EM - https://github.com/SamiLM4/Refactoring-of-the-front-and-system-TCC-2025
 
 🧠 Pré-Diagnóstico de Esclerose Múltipla com IA Generativa
 
