@@ -5,13 +5,23 @@
 Versão REFATORADA do projeto TCC, com melhorias em UI e UX.
 Segue algumas interfaces.
 
+# Tela inicial
+
 ![alt text](image.png)
+
+# Adquirindo licença
 
 ![alt text](image-1.png)
 
+# Tela de login
+
 ![alt text](image-2.png)
 
+# Dashboard
+
 ![alt text](image-3.png)
+
+# Abas do sistema
 
 ![alt text](image-4.png)
 
@@ -19,3 +29,8 @@ Segue algumas interfaces.
 
 ![alt text](image-6.png)
 
+![alt text](image-7.png)
+
+### Essa nova interface da IA será desenvolvida, pois essa parte do sistema sera dedicada a um novo projeto.
+
+![alt text](image-8.png)
