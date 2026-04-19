@@ -31,6 +31,6 @@ Segue algumas interfaces.
 
 ![alt text](image-7.png)
 
-### Essa nova interface da IA será desenvolvida, pois essa parte do sistema sera dedicada a um novo projeto.
+### Essa nova interface da IA não será desenvolvida, pois essa parte do sistema sera dedicada a um novo projeto.
 
 ![alt text](image-8.png)
