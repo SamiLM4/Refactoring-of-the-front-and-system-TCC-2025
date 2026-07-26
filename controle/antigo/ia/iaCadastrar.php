@@ -50,7 +50,7 @@ if ($meutoken->validarToken($autorization)) {
     }
 
 
-    $api_key = "x"; // sua chave válida
+    $api_key = ""; // sua chave válida
 
     $content = [["type" => "text", "text" => ""]];
     foreach ($imagensTmp as $tmp) {
@@ -136,7 +136,6 @@ if ($meutoken->validarToken($autorization)) {
 
     #IDIOMA
     Sempre responda em português do Brasil.
-
 
 EOT;
 
