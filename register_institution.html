@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedInsight AI - Cadastro de Instituição</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="front/css/modern.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem;">
+    <div class="card" style="max-width: 800px; width: 100%;">
+        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Ativar Sistema</h1>
+        
+        <form id="registerForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div style="grid-column: span 2;">
+                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Token da Licença</label>
+                <input type="text" id="token" name="token" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;" readonly>
+            </div>
+
+            <div style="grid-column: span 2; margin-top: 1rem;">
+                <h3 style="color: var(--primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Dados da Instituição</h3>
+            </div>
+
+            <div>
+                <label>Nome da Instituição</label>
+                <input type="text" name="nome" placeholder="Hospital Central" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>CNPJ</label>
+                <input type="text" name="cnpj" placeholder="00.000.000/0000-00" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Email de Contato</label>
+                <input type="email" name="email" placeholder="contato@hospital.com" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Telefone</label>
+                <input type="text" name="telefone" placeholder="(11) 99999-9999" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>CEP</label>
+                <input type="text" name="cep" placeholder="00000-000" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Cidade</label>
+                <input type="text" name="cidade" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Logradouro</label>
+                <input type="text" name="logradouro" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Bairro</label>
+                <input type="text" name="bairro" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Tipo</label>
+                <select name="tipo" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+                    <option value="publico">Público</option>
+                    <option value="privado">Privado</option>
+                    <option value="filantropico">Filantrópico</option>
+                </select>
+            </div>
+
+            <div style="grid-column: span 2; margin-top: 1rem;">
+                <h3 style="color: var(--secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Administrador Responsável</h3>
+            </div>
+
+            <div>
+                <label>Nome do Responsável</label>
+                <input type="text" name="nome_responsavel" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Telefone do Responsável</label>
+                <input type="text" name="telefone_responsavel" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>CPF do Responsável</label>
+                <input type="text" name="cpf_admin" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Email de Acesso (Login)</label>
+                <input type="email" name="email_admin" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label>Senha de Acesso</label>
+                <input type="password" name="senha" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+
+            <div style="grid-column: span 2; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">Concluir Cadastro e Ativar Sistema</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        document.getElementById('token').value = urlParams.get('token');
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await fetch('api/instituicoes/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (result.status) {
+                    alert("Sucesso! Sua instituição foi cadastrada. Você será redirecionado para o login.");
+                    window.location.href = 'login.html';
+                } else {
+                    alert("Erro: " + (result.dados?.msg || result.erro || "Falha no cadastro"));
+                }
+            } catch (err) {
+                alert("Erro catastrófico na requisição");
+            }
+        });
+    </script>
+</body>
+</html>

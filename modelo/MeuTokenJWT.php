@@ -1,6 +1,7 @@
 <?php
 namespace Firebase\JWT;
 
+use Banco;
 use stdClass;
 use Firebase\JWT\Key;
 use Firebase\JWT\JWT;
@@ -11,12 +12,16 @@ use UnexpectedValueException;
 use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\ExpiredException;
 
+require_once "modelo/MeuTokenJWT2.php";
+use Firebase\JWT\MeuTokenJWT2;
+
 require_once "jwt/JWT.php";
 require_once "jwt/Key.php";
 require_once "jwt/SignatureInvalidException.php";
 
 require_once "jwt/ExpiredException.php";
 
+require_once __DIR__ . "/Banco.php";
 
 class MeuTokenJWT
 {
@@ -49,9 +54,28 @@ class MeuTokenJWT
         $objPayload->aud = $this->aud;
         $objPayload->sub = $this->sub;
         $objPayload->iat = time();
-        $objPayload->exp = time() + $this->duracaoToken;
+        //$objPayload->exp = time() + $this->duracaoToken;
         $objPayload->nbf = time();
         $objPayload->jti = bin2hex(random_bytes(16));
+
+        $meuBanco = new Banco();
+        $conexao = $meuBanco->getConexao();
+
+        $SQL = "Select expira_em FROM licencas WHERE instituicao = ?";
+        $stmt = $conexao->prepare($SQL);
+        $stmt->bind_param("s", $parametro_claims->instituicao);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $linha = $resultado->fetch_object();
+        if ($linha && isset($linha->expira_em)) {
+            $objPayload->exp = strtotime($linha->expira_em);
+            if ($objPayload->exp <= time()) {
+                throw new Exception("A licença da instituição já expirou.");
+            }
+        } else {
+            throw new Exception("Não foi encontrado expira_em para a instituição informada.");
+        }
+
 
         // ✅ Tornar universal
         if (isset($parametro_claims->email)) {
@@ -71,7 +95,6 @@ class MeuTokenJWT
         if (isset($parametro_claims->instituicao)) {
             $objPayload->instituicao = $parametro_claims->instituicao;
         }
-
 
         $token = JWT::encode((array) $objPayload, $this->key, $this->alg, null, (array) $objHeaders);
         return $token;

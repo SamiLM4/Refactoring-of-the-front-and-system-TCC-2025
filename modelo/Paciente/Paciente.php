@@ -14,6 +14,7 @@ class Paciente
     private $estado_civil;
     private $nome_cuidador;
     private $telefone_cuidador;
+    private $instituicao;
 
     public function jsonSerialize()
     {
@@ -27,6 +28,10 @@ class Paciente
         $objetoResposta->nome_cuidador = $this->nome_cuidador;
         $objetoResposta->telefone = $this->telefone;
         $objetoResposta->email = $this->email;
+        $objetoResposta->instituicao = $this->instituicao;
+        $objetoResposta->endereco = $this->endereco;
+        $objetoResposta->telefone_cuidador = $this->telefone_cuidador;
+
         return $objetoResposta;
     }
 
@@ -42,10 +47,10 @@ class Paciente
             die("Falha na conexão: " . $conexao->connect_error);
         }
 
-        $SQL = "INSERT INTO paciente (cpf, nome, sexo, endereco, telefone, email, profissao, estado_civil, nome_cuidador, telefone_cuidador) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $SQL = "INSERT INTO paciente (id_instituicao, cpf, nome, sexo, endereco, telefone, email, profissao, estado_civil, nome_cuidador, telefone_cuidador) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         if ($prepareSQL = $conexao->prepare($SQL)) {
-            $prepareSQL->bind_param("ssssssssss", $this->cpf, $this->nome, $this->sexo, $this->endereco, $this->telefone, $this->email, $this->profissao, $this->estado_civil, $this->nome_cuidador, $this->telefone_cuidador);
+            $prepareSQL->bind_param("issssssssss", $this->instituicao, $this->cpf, $this->nome, $this->sexo, $this->endereco, $this->telefone, $this->email, $this->profissao, $this->estado_civil, $this->nome_cuidador, $this->telefone_cuidador);
             ;
             if ($prepareSQL->execute()) {
                 $prepareSQL->close();
@@ -123,10 +128,10 @@ class Paciente
             die("Falha na conexão: " . $conexao->connect_error);
         }
 
-        $SQL = "SELECT * FROM paciente ORDER BY nome ASC LIMIT ? OFFSET ?";
+        $SQL = "SELECT * FROM paciente WHERE id_instituicao = ? ORDER BY nome ASC LIMIT ? OFFSET ?";
         $stm = $conexao->prepare($SQL);
         if ($stm) {
-            $stm->bind_param("ii", $itensPorPagina, $offset);
+            $stm->bind_param("iii", $this->instituicao, $itensPorPagina, $offset);
         }
 
         if ($stm->execute()) {
@@ -154,11 +159,16 @@ class Paciente
                 ];
             }
 
-            // Consulta para o total de registros
-            $totalSQL = "SELECT COUNT(*) as total FROM paciente";
-            $totalResult = $conexao->query($totalSQL);
-            $totalRow = $totalResult->fetch_assoc();
+            $totalSQL = "SELECT COUNT(*) as total FROM paciente WHERE id_instituicao = ?";
+
+            $stmt = $conexao->prepare($totalSQL);
+            $stmt->bind_param("i", $this->instituicao);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $totalRow = $result->fetch_assoc();
             $total = $totalRow['total'];
+            $stmt->close();
+
 
             return [
                 "status" => true,
@@ -193,11 +203,11 @@ class Paciente
                     SELECT *
                     FROM ia_results ia
                     WHERE ia.id_paciente = p.id
-                ) ORDER BY nome ASC LIMIT ? OFFSET ?;
+                )  AND p.id_instituicao = ? ORDER BY nome ASC LIMIT ? OFFSET ?;
             ";
         $stm = $conexao->prepare($SQL);
         if ($stm) {
-            $stm->bind_param("ii", $itensPorPagina, $offset);
+            $stm->bind_param("iii", $this->instituicao, $itensPorPagina, $offset);
         }
 
         if ($stm->execute()) {
@@ -226,10 +236,15 @@ class Paciente
             }
 
             // Consulta para o total de registros
-            $totalSQL = "SELECT COUNT(*) as total FROM paciente";
-            $totalResult = $conexao->query($totalSQL);
-            $totalRow = $totalResult->fetch_assoc();
+            $totalSQL = "SELECT COUNT(*) as total FROM paciente WHERE id_instituicao = ?";
+
+            $stmt = $conexao->prepare($totalSQL);
+            $stmt->bind_param("i", $this->instituicao);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $totalRow = $result->fetch_assoc();
             $total = $totalRow['total'];
+            $stmt->close();
 
             return [
                 "status" => true,
@@ -254,10 +269,10 @@ class Paciente
             die("Falha na conexão: " . $conexao->connect_error);
         }
 
-        $stm = $conexao->prepare("SELECT * FROM paciente WHERE cpf LIKE ?");
+        $stm = $conexao->prepare("SELECT * FROM paciente WHERE cpf LIKE ? AND id_instituicao = ?");
 
         $busca = "%" . $this->cpf . "%";
-        $stm->bind_param("s", $busca);
+        $stm->bind_param("si", $busca, $this->instituicao);
 
         if ($stm->execute()) {
             $resultado = $stm->get_result();
@@ -307,10 +322,10 @@ class Paciente
                     SELECT *
                     FROM ia_results ia
                     WHERE ia.id_paciente = p.id
-                ) AND p.cpf LIKE ?");
+                ) AND p.cpf LIKE ? AND p.id_instituicao = ?");
 
         $busca = "%" . $this->cpf . "%";
-        $stm->bind_param("s", $busca);
+        $stm->bind_param("si", $busca, $this->instituicao);
 
         if ($stm->execute()) {
             $resultado = $stm->get_result();
@@ -355,17 +370,11 @@ class Paciente
         }
 
 
-        $sql = "SELECT p.*
-                FROM paciente p
-                WHERE NOT EXISTS (
-                    SELECT *
-                    FROM ia_results ia
-                    WHERE ia.id_paciente = p.id
-                ) AND p.nome LIKE ?";
+        $sql = "SELECT p.* FROM paciente p WHERE p.nome LIKE ? AND p.id_instituicao = ?";
         $stm = $conexao->prepare($sql);
 
         $busca = "%" . $this->nome . "%";
-        $stm->bind_param("s", $busca);
+        $stm->bind_param("si", $busca, $this->instituicao);
 
         $stm->execute();
         $resultado = $stm->get_result();
@@ -373,18 +382,19 @@ class Paciente
 
         // Se não encontrou pelo nome, tenta pelo email
         if ($resultado->num_rows === 0) {
+
             $sql = "SELECT p.*
                 FROM paciente p
                 WHERE NOT EXISTS (
                     SELECT *
                     FROM ia_results ia
                     WHERE ia.id_paciente = p.id
-                ) AND p.email LIKE ?";
+                ) AND p.email LIKE ? AND p.id_instituicao = ?";
 
             $stm = $conexao->prepare($sql);
 
             $busca = "%" . $this->nome . "%";
-            $stm->bind_param("s", $busca);
+            $stm->bind_param("si", $busca, $this->instituicao);
 
             $stm->execute();
             $resultado = $stm->get_result();
@@ -431,11 +441,11 @@ class Paciente
         FROM paciente p
         LEFT JOIN diagnostico d ON p.id = d.id_paciente
         LEFT JOIN ia_results ia ON p.id = ia.id_paciente
-        WHERE p.nome LIKE ? AND d.id_table IS NULL AND ia.id_table IS NULL
+        WHERE p.nome LIKE ? AND d.id_table IS NULL AND ia.id_table IS NULL AND p.id_instituicao = ?
     ";
         $stm = $conexao->prepare($sql);
         $busca = "%" . $this->nome . "%";
-        $stm->bind_param("s", $busca);
+        $stm->bind_param("si", $busca, $this->instituicao);
         $stm->execute();
         $resultado = $stm->get_result();
         $stm->close();
@@ -447,11 +457,11 @@ class Paciente
             FROM paciente p
             LEFT JOIN diagnostico d ON p.id = d.id_paciente
             LEFT JOIN ia_results ia ON p.id = ia.id_paciente
-            WHERE p.email LIKE ? AND d.id_table IS NULL AND ia.id_table IS NULL
+            WHERE p.email LIKE ? AND d.id_table IS NULL AND ia.id_table IS NULL AND p.id_instituicao = ?
         ";
             $stm = $conexao->prepare($sql);
             $busca = "%" . $this->nome . "%";
-            $stm->bind_param("s", $busca);
+            $stm->bind_param("si", $busca, $this->instituicao);
             $stm->execute();
             $resultado = $stm->get_result();
             $stm->close();
@@ -494,7 +504,7 @@ class Paciente
             die("Falha na conexão: " . $conexao->connect_error);
         }
 
-        $sql = "UPDATE Paciente SET nome=?, sexo=?, endereco=?, telefone=?, email=?, profissao=?, estado_civil=?, nome_cuidador=?, telefone_cuidador=?  WHERE cpf = ? ";
+        $sql = "UPDATE Paciente SET nome=?, sexo=?, endereco=?, telefone=?, email=?, profissao=?, estado_civil=?, nome_cuidador=?, telefone_cuidador=?  WHERE cpf = ? AND id_instituicao = ?";
         $stm = $meuBanco->getConexao()->prepare($sql);
 
         if ($stm === false) {
@@ -502,7 +512,8 @@ class Paciente
             return false;
         }
 
-        $stm->bind_param("ssssssssss", $this->nome, $this->sexo, $this->endereco, $this->telefone, $this->email, $this->profissao, $this->estado_civil, $this->nome_cuidador, $this->telefone_cuidador, $this->cpf);
+        $stm->bind_param("ssssssssssi",
+         $this->nome, $this->sexo, $this->endereco, $this->telefone, $this->email, $this->profissao, $this->estado_civil, $this->nome_cuidador, $this->telefone_cuidador, $this->cpf, $this->instituicao);
 
         if ($stm->execute()) {
             $stm->close();
@@ -527,12 +538,12 @@ class Paciente
         }
 
         // Define a consulta SQL para excluir um curso pelo ID
-        $SQL = "DELETE FROM paciente WHERE cpf = ?;";
+        $SQL = "DELETE FROM paciente WHERE cpf = ? AND id_instituicao = ?;";
 
         // Prepara a consulta
         if ($prepareSQL = $conexao->prepare($SQL)) {
             // Define o parâmetro da consulta com o ID do curso
-            $prepareSQL->bind_param("s", $this->cpf);
+            $prepareSQL->bind_param("si", $this->cpf, $this->instituicao);
 
             // Executa a consulta
             if ($prepareSQL->execute()) {
@@ -663,7 +674,15 @@ class Paciente
         $this->telefone_cuidador = $telefone_cuidador;
     }
 
+    public function getinstituicao()
+    {
+        return $this->instituicao;
+    }
 
+    public function setinstituicao($instituicao)
+    {
+        $this->instituicao = $instituicao;
+    }
 
 }
 ?>

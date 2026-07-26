@@ -1,376 +1,550 @@
-create database tests_tcc;
-use tests_tcc;
-
-	create table instituicao (
-		id int primary key auto_increment,
-        nome varchar(100) not null,
-        CEP VARCHAR(12),
-        logradouro text,
-        cidade VARCHAR(60),
-        bairro varchar(50),
-        cnpj varchar(20) UNIQUE,
-        tipo ENUM('público', 'privado', 'filantrópico'),
-        telefone varchar(25),
-        email varchar(155),
-        site text,
-        atividade ENUM('ativo', 'inativo') default 'ativo',
-        nome_responsavel varchar(100)
-    );
-
-	create table adm (
-		id int primary key auto_increment,
-        id_instituicao int not null,
-        foreign key (id_instituicao) references instituicao(id) ON DELETE CASCADE,
-		nome varchar(150) not null,
-		email varchar(150) not null UNIQUE,
-		senha varchar(255) not null
-	);
-
-	select * from adm;
-
-	CREATE TABLE medico (
-		id int PRIMARY KEY auto_increment, 
-		id_instituicao int not null,
-        foreign key (id_instituicao) references instituicao(id) ON DELETE CASCADE,
-		cpf VARCHAR(11) not null UNIQUE,
-		crm VARCHAR(11) not null,
-		email VARCHAR(100) not null,
-		senha VARCHAR(50) not null,
-		nome VARCHAR(100) NOT NULL
-	);
-
-	CREATE TABLE paciente (
-		id INT PRIMARY KEY auto_increment,
-        id_instituicao int not null,
-        foreign key (id_instituicao) references instituicao(id) ON DELETE CASCADE,
-		cpf varchar(11) not null,
-		nome varchar(100) not null,
-		sexo varchar(1),
-		endereco text,
-		telefone varchar(50) not null,
-		email varchar(255) not null,
-		profissao varchar(255),
-		estado_civil varchar(50),
-		nome_cuidador varchar(100),
-		telefone_cuidador varchar(50)    
-	);
-		
-	CREATE TABLE diagnostico (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		data_diagnostico date,
-		tipo_em varchar(5),
-		surtos text,
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);    
-
-	create table sintomas (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		sintomas_iniciais text,
-		sintomas_atuais text,
-		fadiga bool,
-		problema_visao varchar(100),
-		problema_equilibrio bool,
-		problema_coordenacao bool,
-		espaticidade bool,
-		fraqueza_muscular bool,
-		problema_sensibilidade varchar(100),
-		problema_bexiga bool,
-		problema_intestino bool,
-		problema_cognitivo varchar(255),
-		problema_emocional VARCHAR(255),
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);
-
-	create table historico_medico (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		medicamento_em_uso text,
-		tratamentos_anteriores_em text,
-		alergias text,
-		historico_outras_doencas text,
-		historico_familiar text,
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);
-			
-	create table historico_social (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		tabagismo varchar(50),
-		alcool varchar(100),
-		atividade_fisica text,
-		suporte_social text,
-		impacto_profissional_social text,
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);  
-
-	create table qualidade_vida_em (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		edss float, 
-		questionario_msqol54 text,
-		outras_avaliacoes text,
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);
-	  
-	create table exame_fisico (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		exame_neurologico text,
-		forca_muscular text, 
-		reflexos text,
-		coordenacao text, 
-		sensibilidade text,
-		equilibrio text,
-		funcao_visual text,
-		outros_exames_fisicos text,
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);
-
-	create table exames_complementares (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		rm_cerebro_medula text,
-		potenciais_evocados_visuais text,
-		potenciais_evocados_somatossensoriais text,
-		potenciais_evocados_auditivos_de_tronco_encefálico text,
-		análise_do_líquido_cefalorraquidiano text,
-		outros_exames text,
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);
-	  
-	create table plano_tratamento (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		medicamentos_modificadores__doença text,
-		tratamnto_surtos text,
-		tratamento_sintomas text, 
-		reabilitacao text,
-		acompanhamento_psicologico text,
-		outras_terapias text,
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);  
-	  
-	  create table ia_results (
-		id_table int primary key auto_increment,
-		id_paciente int,
-		nome varchar(150),
-		cpf varchar(20),
-		imagem longtext, 
-		diagnostico text,
-		data_diagnostico date,
-
-		foreign key (id_paciente) references paciente(id) ON DELETE CASCADE
-	);  
-	  
-	CREATE TABLE relacao_medico_paciente (
-    id_table INT PRIMARY KEY AUTO_INCREMENT,
-    id_medico INT NULL,
-    id_paciente INT NOT NULL,
-    UNIQUE (id_medico, id_paciente),
-    FOREIGN KEY (id_medico) REFERENCES medico(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_paciente) REFERENCES paciente(id) ON DELETE CASCADE
-);
-	
-CREATE TABLE mensagens_chat (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  cpf_medico VARCHAR(11) not null,
-  mensagem TEXT NOT NULL,
-  origem ENUM('medico', 'adm') NOT NULL,
-  data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  lida BOOLEAN DEFAULT FALSE,
-  FOREIGN KEY (cpf_medico) REFERENCES medico(cpf) ON DELETE CASCADE
-);
+create database TCC25;
+use TCC25;
     
-      
-#	CREATE TABLE relacao_medico_paciente (
-#		id_table int primary key auto_increment,
-#		id_medico INT,
-#		id_paciente INT,
-#	#    PRIMARY KEY (id_medico, id_paciente),
-#		FOREIGN KEY (id_medico) REFERENCES medico(id) ON DELETE CASCADE,
-#		FOREIGN KEY (id_paciente) REFERENCES paciente(id) ON DELETE CASCADE 
-#	);
+CREATE TABLE instituicao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cep VARCHAR(12) NOT NULL,
+    logradouro TEXT NOT NULL,
+    cidade VARCHAR(60) NOT NULL,
+    bairro VARCHAR(50) NOT NULL,
+    cnpj VARCHAR(20) UNIQUE NOT NULL,
+    tipo ENUM('publico', 'privado', 'filantropico') NOT NULL,
+    telefone VARCHAR(25) NOT NULL,
+    email VARCHAR(155) NOT NULL,
+    site TEXT,
+    atividade ENUM('ativo', 'inativo') DEFAULT 'ativo',
+    nome_responsavel VARCHAR(100) NOT NULL,
+    telefone_responsavel VARCHAR(20) NOT NULL
+);
 
-# INSERT #
+CREATE TABLE planos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT NULL,
 
--- INSERTS ADM -- 
+    limite_usuarios INT NULL,
+    limite_papeis INT NULL,
 
-INSERT INTO instituicao 
-(nome, CEP, logradouro, cidade, bairro, cnpj, tipo, telefone, email, site, atividade, nome_responsavel)
+    limite_ia INT NULL,
+
+    valor DECIMAL(10,2) NOT NULL,
+    duracao_dias INT NOT NULL,
+
+    ativo BOOLEAN DEFAULT TRUE,
+
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE licencas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(512) NOT NULL UNIQUE,
+    instituicao_id INT,
+    status ENUM('ativa','inativa') DEFAULT 'ativa',
+    usado BOOLEAN DEFAULT FALSE,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expira_em TIMESTAMP NULL,
+    plano_id INT NOT NULL,
+
+	FOREIGN KEY (plano_id) REFERENCES planos(id),
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
+);
+
+INSERT INTO planos
+(nome, descricao, limite_usuarios, limite_papeis, limite_ia, valor, duracao_dias)
 VALUES
-('Hospital Santa Luzia', '01311000', 'Av. Paulista, 1000', 'São Paulo', 'Bela Vista', '12345678000101', 'privado', '(11) 3234-1000', 'contato@santaluzia.com.br', 'www.santaluzia.com.br', 'ativo', 'Dr. Marcos Almeida'),
+(
+'Básico',
+'Plano ideal para clínicas pequenas',
+5, 1, 50,
+199.90,
+30
+),
+(
+'Profissional',
+'Plano intermediário',
+15, 3, 300,
+499.90,
+30
+),
+(
+'Enterprise',
+'Ilimitado para grandes instituições',
+NULL, NULL, NULL,
+1299.90,
+30
+);
 
-('Hospital Público Central', '20040002', 'Rua da Saúde, 200', 'Rio de Janeiro', 'Centro', '23456789000112', 'público', '(21) 2222-3000', 'administracao@hpc.rj.gov.br', 'www.hpc.rj.gov.br', 'ativo', 'Dra. Patrícia Costa'),
+CREATE TABLE papeis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) UNIQUE NOT NULL,
+    descricao TEXT,
+    instituicao_id INT NOT NULL,
+    is_delete TINYINT(1) NOT NULL DEFAULT 0,
+    
+    FOREIGN KEY (instituicao_id)
+	REFERENCES instituicao(id)
+	ON DELETE CASCADE
 
-('Instituto Vida Plena', '30130000', 'Av. Amazonas, 500', 'Belo Horizonte', 'Centro', '34567890000123', 'filantrópico', '(31) 3333-4000', 'contato@vidaplena.org.br', 'www.vidaplena.org.br', 'ativo', 'Dr. Ricardo Moreira'),
+);
 
-('Clínica São Rafael', '40010000', 'Rua das Flores, 150', 'Salvador', 'Comércio', '45678901000134', 'privado', '(71) 3444-5000', 'contato@saorafael.com.br', 'www.saorafael.com.br', 'ativo', 'Dra. Helena Santos'),
+CREATE TABLE permissoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) UNIQUE NOT NULL,
+    descricao TEXT
+);
 
-('Hospital Esperança', '80010010', 'Av. Curitiba, 250', 'Curitiba', 'Centro', '56789012000145', 'filantrópico', '(41) 3555-6000', 'contato@esperanca.org.br', 'www.esperanca.org.br', 'ativo', 'Dr. André Pires');
+CREATE TABLE papeis_permissoes (
+    papel_id INT NOT NULL,
+    permissao_id INT NOT NULL,
+    PRIMARY KEY (papel_id, permissao_id),
+
+    FOREIGN KEY (papel_id) REFERENCES papeis(id) ON DELETE CASCADE,
+    FOREIGN KEY (permissao_id) REFERENCES permissoes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    
+    email VARCHAR(150) NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    admin_owner TINYINT(1) NOT NULL DEFAULT 0,
+
+    nome VARCHAR(150) NULL,
+    cpf VARCHAR(11) NULL,
+    crm VARCHAR(20) NULL,
+    especialidade VARCHAR(100) NULL,
+    
+    ativo BOOLEAN DEFAULT TRUE,
+    ultimo_login TIMESTAMP NULL,
+    tentativas_login INT DEFAULT 0,
+    
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+
+    UNIQUE (instituicao_id, email),
+    UNIQUE (cpf),
+    UNIQUE (crm),
+
+    CONSTRAINT fk_usuario_instituicao
+        FOREIGN KEY (instituicao_id)
+        REFERENCES instituicao(id)
+);
+
+CREATE TABLE usuarios_papeis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id int not null,
+    usuario_id INT NOT NULL,
+    papel_id INT NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+	foreign key (instituicao_id) references instituicao(id) on delete cascade,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (papel_id) REFERENCES papeis(id)
+);
+
+CREATE TABLE historico_acessos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    ip VARCHAR(45),
+    user_agent TEXT,
+    data_acesso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+CREATE TABLE refresh_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    token VARCHAR(512) NOT NULL UNIQUE,
+    expira_em TIMESTAMP NOT NULL,
+    revogado BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP NULL,
+
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+/*
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL UNIQUE,
+    instituicao_id INT NOT NULL,
+    nome VARCHAR(150) NOT NULL,
+    admin_owner TINYINT(1) NOT NULL DEFAULT 0,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
+
+);
+*/
+/*
+	CREATE TABLE medicos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL UNIQUE,
+    instituicao_id INT NOT NULL,
+    cpf VARCHAR(11) NOT NULL UNIQUE,
+    crm VARCHAR(11) NOT NULL UNIQUE,
+    nome VARCHAR(100) NOT NULL,
+    deleted_at TIMESTAMP NULL,
+
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
+
+);
+*/
+CREATE TABLE pacientes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT UNIQUE NULL,
+    instituicao_id INT NOT NULL,
+    cpf VARCHAR(11) NOT NULL UNIQUE,
+    nome VARCHAR(100) NOT NULL,
+    sexo CHAR(1),
+    endereco TEXT,
+    telefone VARCHAR(50),
+    profissao VARCHAR(255),
+    estado_civil VARCHAR(50),
+    nome_cuidador VARCHAR(100),
+    telefone_cuidador VARCHAR(50),
+    deleted_at TIMESTAMP NULL,
+
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
+
+);
+        
+CREATE TABLE auditoria_medica (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    acao VARCHAR(100),
+    descricao TEXT,
+    ip VARCHAR(45),
+    data_acao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    instituicao_id int not null,
+
+	FOREIGN KEY (instituicao_id) REFERENCES instituicao(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE NO ACTION
+
+);        
+        
+CREATE TABLE diagnosticos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    data_diagnostico DATE,
+    tipo_em VARCHAR(5),
+    surtos TEXT,
+    deleted_at TIMESTAMP NULL,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE sintomas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    sintomas_iniciais TEXT,
+    sintomas_atuais TEXT,
+    fadiga BOOLEAN,
+    problema_visao VARCHAR(100),
+    problema_equilibrio BOOLEAN,
+    problema_coordenacao BOOLEAN,
+    espaticidade BOOLEAN,
+    fraqueza_muscular BOOLEAN,
+    problema_sensibilidade VARCHAR(100),
+    problema_bexiga BOOLEAN,
+    problema_intestino BOOLEAN,
+    problema_cognitivo VARCHAR(255),
+    problema_emocional VARCHAR(255),
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE historico_medico (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    medicamento_em_uso TEXT,
+    tratamentos_anteriores_em TEXT,
+    alergias TEXT,
+    historico_outras_doencas TEXT,
+    historico_familiar TEXT,
+    deleted_at TIMESTAMP NULL,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE historico_social (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    tabagismo VARCHAR(50),
+    alcool VARCHAR(100),
+    atividade_fisica TEXT,
+    suporte_social TEXT,
+    impacto_profissional_social TEXT,
+    deleted_at TIMESTAMP NULL,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE qualidade_vida_em (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    edss FLOAT,
+    questionario_msqol54 TEXT,
+    outras_avaliacoes TEXT,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE exame_fisico (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    exame_neurologico TEXT,
+    forca_muscular TEXT,
+    reflexos TEXT,
+    coordenacao TEXT,
+    sensibilidade TEXT,
+    equilibrio TEXT,
+    funcao_visual TEXT,
+    outros_exames_fisicos TEXT,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE exames_complementares (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    rm_cerebro_medula TEXT,
+    potenciais_evocados_visuais TEXT,
+    potenciais_evocados_somatossensoriais TEXT,
+    potenciais_evocados_auditivos_de_tronco_encefalico TEXT,
+    analise_do_liquido_cefalorraquidiano TEXT,
+    outros_exames TEXT,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE plano_tratamento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    medicamentos_modificadores_doenca TEXT,
+    tratamento_surtos TEXT,
+    tratamento_sintomas TEXT,
+    reabilitacao TEXT,
+    acompanhamento_psicologico TEXT,
+    outras_terapias TEXT,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ia_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    nome VARCHAR(150),
+    cpf VARCHAR(20),
+    imagem LONGTEXT,
+    diagnostico TEXT,
+    data_diagnostico DATE,
+
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+
+ /*     
+CREATE TABLE medico_paciente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    medico_id INT,
+    paciente_id INT NOT NULL,
+    UNIQUE (medico_id, paciente_id),
+    deleted_at TIMESTAMP NULL,
+
+    FOREIGN KEY (medico_id) REFERENCES medicos(id)ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+);
+*/    
+CREATE TABLE mensagens_chat (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instituicao_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    mensagem TEXT NOT NULL,
+    origem_papel_id INT NOT NULL,
+    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lida BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP NULL,
+
+	FOREIGN KEY (origem_papel_id) REFERENCES papeis(id),
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+CREATE INDEX idx_usuarios_email ON usuarios(email);
+CREATE INDEX idx_auditoria_usuario ON auditoria_medica(usuario_id);
+CREATE INDEX idx_auditoria_paciente ON auditoria_medica(paciente_id);
+CREATE INDEX idx_refresh_usuario ON refresh_tokens(usuario_id);
+CREATE INDEX idx_usuarios_deleted ON usuarios(deleted_at);
+
+ALTER TABLE papeis DROP INDEX nome;
+ALTER TABLE papeis
+ADD UNIQUE (nome, instituicao_id);
+
+## TEST
+
+USE TCC25;
+
+INSERT INTO permissoes (nome) VALUES
+('usuario.listar'),
+('usuario.visualizar'),
+('usuario.criar'),
+('usuario.editar'),
+('usuario.deletar'),
+
+('papel.listar'),
+('papel.criar'),
+('papel.deletar'),
+('papel.vincular_permissao'),
+('permissao.listar'),
+
+('admin.listar'),
+('admin.visualizar'),
+('papel.atribuir'),
+('admin.editar'),
+('admin.deletar'),
+/*
+('medico.listar'),
+('medico.visualizar'),
+('medico.criar'),
+('medico.editar'),
+('medico.deletar'),
+('medico.vincular_paciente'),
+('medico.listar_pacientes'),
+('medico.desvincular_paciente'),
+
+('paciente.listar'),
+('paciente.visualizar'),
+('paciente.criar'),
+('paciente.editar'),
+('paciente.deletar'),
+*/
+('ia.criar'),
+('ia.listar'),
+('ia.deletar'),
+('ia.visualizar_imagem'),
+
+('chat.enviar'),
+('chat.listar'),
+('chat.marcar_lida'),
+('chat.visualizar'),
+
+('auditoria.listar'),
+('auditoria.criar'),
+
+('anamnese.listar'),
+('anamnese.criar'),
+('anamnese.editar'),
+('anamnese.deletar'),
+
+('instituicao.visualizar'),
+('instituicao.criar'),
+('instituicao.editar'),
+('instituicao.deletar'),
+
+('licenca.criar'),
+('licenca.visualizar'),
+('licenca.ativar'),
+('licenca.renovar'),
+
+('plano.alterar'),
+('plano.visualizar');
+
+/*
+INSERT INTO usuarios (email, senha_hash)
+VALUES
+('admin@teste.com', '$2y$10$md.r9c9rnGG9XgMUm3xApO9t94g1TsTdK8IcQ1S3q1g9pbTR5wlzO'),
+('medico@teste.com', '$2y$10$md.r9c9rnGG9XgMUm3xApO9t94g1TsTdK8IcQ1S3q1g9pbTR5wlzO'),
+('paciente@teste.com', '$2y$10$md.r9c9rnGG9XgMUm3xApO9t94g1TsTdK8IcQ1S3q1g9pbTR5wlzO');
+
+#########################################
+
+-- =========================
+-- INSTITUICAO
+-- =========================
+INSERT INTO instituicao (nome, cep, logradouro, cidade, bairro, cnpj, tipo, telefone, email, site, nome_responsavel, telefone_responsavel) VALUES
+('Hospital Teste', '12200-000', 'Rua A', 'São José', 'Centro', '12345678000199', 'privado', '(12)99999-9999', 'contato@hospital.com', 'https://hospital.com', 'Diretor Teste', '(12)98888-8888'),
+('Clinica Saúde', '12210-111', 'Rua B', 'São José', 'Vila Nova', '12345678000299', 'filantropico', '(12)98888-7777', 'contato@clinica.com', 'https://clinica.com', 'Dr. Saúde', '(12)97777-7777'),
+('Hospital Universitário', '12220-222', 'Rua C', 'São José', 'Jardim', '12345678000399', 'publico', '(12)96666-6666', 'contato@universitario.com', 'https://universitario.com', 'Prof. Diretor', '(12)95555-5555');
+
+INSERT INTO papeis (nome, descricao, instituicao_id) VALUES
+('ADMIN', 'Administrador do sistema', 1),
+('MEDICO', 'Médico responsável', 1),
+('PACIENTE', 'Paciente cadastrado', 1);
 
 
-INSERT INTO adm (id_instituicao, nome, email, senha) VALUES 
-(1, 'adm1', 'adm1@gmail.com', MD5('adm01')),
-(1, 'adm2', 'adm2@gmail.com', MD5('adm02')),
-(1, 'adm3', 'adm3@gmail.com', MD5('adm03')),
-(1, 'adm4', 'adm4@gmail.com', MD5('adm04')),
-(1, 'adm5', 'adm5@gmail.com', MD5('adm05')),
-(1, 'adm6', 'adm6@gmail.com', MD5('adm06')),
-(1, 'adm7', 'adm7@gmail.com', MD5('adm07')),
-(1, 'adm8', 'adm8@gmail.com', MD5('adm08')),
-(1, 'adm9', 'adm9@gmail.com', MD5('adm09')),
-(1, 'adm10', 'adm10@gmail.com', MD5('adm10')),
-(1, 'adm11', 'adm11@gmail.com', MD5('adm11')),
-(1, 'adm12', 'adm12@gmail.com', MD5('adm12')),
-(1, 'adm13', 'adm13@gmail.com', MD5('adm13')),
-(1, 'adm14', 'adm14@gmail.com', MD5('adm14')),
-(1, 'adm15', 'adm15@gmail.com', MD5('adm15')),
-(1, 'adm16', 'adm16@gmail.com', MD5('adm16')),
-(1, 'adm17', 'adm17@gmail.com', MD5('adm17')),
-(1, 'adm18', 'adm18@gmail.com', MD5('adm18')),
-(1, 'adm19', 'adm19@gmail.com', MD5('adm19')),
-(1, 'adm20', 'adm20@gmail.com', MD5('adm20')),
-(2, 'adm21', 'adm21@gmail.com', MD5('adm21')),
-(2, 'adm22', 'adm22@gmail.com', MD5('adm22')),
-(2, 'adm23', 'adm23@gmail.com', MD5('adm23')),
-(2, 'adm24', 'adm24@gmail.com', MD5('adm24')),
-(2, 'adm25', 'adm25@gmail.com', MD5('adm25')),
-(2, 'adm26', 'adm26@gmail.com', MD5('adm26')),
-(2, 'adm27', 'adm27@gmail.com', MD5('adm27')),
-(2, 'adm28', 'adm28@gmail.com', MD5('adm28')),
-(2, 'adm29', 'adm29@gmail.com', MD5('adm29')),
-(2, 'adm30', 'adm30@gmail.com', MD5('adm30')),
-(2, 'adm31', 'adm31@gmail.com', MD5('adm31')),
-(2, 'adm32', 'adm32@gmail.com', MD5('adm32')),
-(2, 'adm33', 'adm33@gmail.com', MD5('adm33')),
-(2, 'adm34', 'adm34@gmail.com', MD5('adm34')),
-(2, 'adm35', 'adm35@gmail.com', MD5('adm35')),
-(2, 'adm36', 'adm36@gmail.com', MD5('adm36')),
-(2, 'adm37', 'adm37@gmail.com', MD5('adm37')),
-(2, 'adm38', 'adm38@gmail.com', MD5('adm38')),
-(2, 'adm39', 'adm39@gmail.com', MD5('adm39')),
-(2, 'adm40', 'adm40@gmail.com', MD5('adm40')),
-(2, 'adm41', 'adm41@gmail.com', MD5('adm41')),
-(2, 'adm42', 'adm42@gmail.com', MD5('adm42')),
-(2, 'adm43', 'adm43@gmail.com', MD5('adm43')),
-(2, 'adm44', 'adm44@gmail.com', MD5('adm44')),
-(2, 'adm45', 'adm45@gmail.com', MD5('adm45')),
-(2, 'adm46', 'adm46@gmail.com', MD5('adm46')),
-(2, 'adm47', 'adm47@gmail.com', MD5('adm47')),
-(2, 'adm48', 'adm48@gmail.com', MD5('adm48')),
-(2, 'adm49', 'adm49@gmail.com', MD5('adm49')),
-(2, 'adm50', 'adm50@gmail.com', MD5('adm50'));
+INSERT INTO pacientes (usuario_id, instituicao_id, cpf, nome, sexo, telefone) VALUES
+(3, 1, '98765432100', 'Paciente A', 'M', '(12)98888-1111');
 
+INSERT INTO mensagens_chat (instituicao_id, usuario_id, mensagem, origem_papel_id) VALUES
+(1, 2, 'Olá, paciente A!', 2),
+(1, 2, 'Agendamento confirmado.', 2),
+(1, 2, 'Lembrete de consulta.', 2);
+##############################################################################################
 
--- INSERT MÉDICOS --
+-- =========================
+-- ADMIN (total)
+-- =========================
+INSERT INTO papeis_permissoes (papel_id, permissao_id) VALUES
+(1, 1),(1, 2),(1, 3),(1, 4),(1, 5), -- usuarios
+(1, 6),(1, 7),(1, 8),(1, 9),        -- papeis/permissoes
+(1, 10),(1, 11),(1, 12),(1, 13),(1, 14), -- admins
+(1, 15),(1, 16),(1, 17),(1, 18),(1, 19),(1, 20),(1, 21),(1, 22), -- medicos
+(1, 23),(1, 24),(1, 25),(1, 26),(1, 27), -- pacientes
+(1, 28),(1, 29),(1, 30),(1, 31),         -- IA
+(1, 32),(1, 33),(1, 34),(1, 35),         -- Chat
+(1, 36),(1, 37),                          -- Auditoria
+(1, 38),(1, 39),(1, 40),(1, 41);         -- Anamnese
 
-INSERT INTO medico (id_instituicao, cpf, crm, email, senha, nome) VALUES
-(1, '11111111111', 'CRM000001', 'medico1@gmail.com', MD5('med01'), 'Dr. Médico 1'),
-(1, '11111111112', 'CRM000002', 'medico2@gmail.com', MD5('med02'), 'Dr. Médico 2'),
-(1, '11111111113', 'CRM000003', 'medico3@gmail.com', MD5('med03'), 'Dr. Médico 3'),
-(1, '11111111114', 'CRM000004', 'medico4@gmail.com', MD5('med04'), 'Dr. Médico 4'),
-(1, '11111111115', 'CRM000005', 'medico5@gmail.com', MD5('med05'), 'Dr. Médico 5'),
-(1, '11111111116', 'CRM000006', 'medico6@gmail.com', MD5('med06'), 'Dr. Médico 6'),
-(1, '11111111117', 'CRM000007', 'medico7@gmail.com', MD5('med07'), 'Dr. Médico 7'),
-(1, '11111111118', 'CRM000008', 'medico8@gmail.com', MD5('med08'), 'Dr. Médico 8'),
-(1, '11111111119', 'CRM000009', 'medico9@gmail.com', MD5('med09'), 'Dr. Médico 9'),
-(1, '11111111120', 'CRM000010', 'medico10@gmail.com', MD5('med10'), 'Dr. Médico 10'),
-(1, '11111111121', 'CRM000011', 'medico11@gmail.com', MD5('med11'), 'Dr. Médico 11'),
-(1, '11111111122', 'CRM000012', 'medico12@gmail.com', MD5('med12'), 'Dr. Médico 12'),
-(1, '11111111123', 'CRM000013', 'medico13@gmail.com', MD5('med13'), 'Dr. Médico 13'),
-(1, '11111111124', 'CRM000014', 'medico14@gmail.com', MD5('med14'), 'Dr. Médico 14'),
-(1, '11111111125', 'CRM000015', 'medico15@gmail.com', MD5('med15'), 'Dr. Médico 15'),
-(1, '11111111126', 'CRM000016', 'medico16@gmail.com', MD5('med16'), 'Dr. Médico 16'),
-(1, '11111111127', 'CRM000017', 'medico17@gmail.com', MD5('med17'), 'Dr. Médico 17'),
-(1, '11111111128', 'CRM000018', 'medico18@gmail.com', MD5('med18'), 'Dr. Médico 18'),
-(1, '11111111129', 'CRM000019', 'medico19@gmail.com', MD5('med19'), 'Dr. Médico 19'),
-(1, '11111111130', 'CRM000020', 'medico20@gmail.com', MD5('med20'), 'Dr. Médico 20'),
-(1, '11111111131', 'CRM000021', 'medico21@gmail.com', MD5('med21'), 'Dr. Médico 21'),
-(1, '11111111132', 'CRM000022', 'medico22@gmail.com', MD5('med22'), 'Dr. Médico 22'),
-(1, '11111111133', 'CRM000023', 'medico23@gmail.com', MD5('med23'), 'Dr. Médico 23'),
-(1, '11111111134', 'CRM000024', 'medico24@gmail.com', MD5('med24'), 'Dr. Médico 24'),
-(1, '11111111135', 'CRM000025', 'medico25@gmail.com', MD5('med25'), 'Dr. Médico 25'),
-(2, '11111111136', 'CRM000026', 'medico26@gmail.com', MD5('med26'), 'Dr. Médico 26'),
-(2, '11111111137', 'CRM000027', 'medico27@gmail.com', MD5('med27'), 'Dr. Médico 27'),
-(2, '11111111138', 'CRM000028', 'medico28@gmail.com', MD5('med28'), 'Dr. Médico 28'),
-(2, '11111111139', 'CRM000029', 'medico29@gmail.com', MD5('med29'), 'Dr. Médico 29'),
-(2, '11111111140', 'CRM000030', 'medico30@gmail.com', MD5('med30'), 'Dr. Médico 30'),
-(2, '11111111141', 'CRM000031', 'medico31@gmail.com', MD5('med31'), 'Dr. Médico 31'),
-(2, '11111111142', 'CRM000032', 'medico32@gmail.com', MD5('med32'), 'Dr. Médico 32'),
-(2, '11111111143', 'CRM000033', 'medico33@gmail.com', MD5('med33'), 'Dr. Médico 33'),
-(2, '11111111144', 'CRM000034', 'medico34@gmail.com', MD5('med34'), 'Dr. Médico 34'),
-(2, '11111111145', 'CRM000035', 'medico35@gmail.com', MD5('med35'), 'Dr. Médico 35'),
-(2, '11111111146', 'CRM000036', 'medico36@gmail.com', MD5('med36'), 'Dr. Médico 36'),
-(2, '11111111147', 'CRM000037', 'medico37@gmail.com', MD5('med37'), 'Dr. Médico 37'),
-(2, '11111111148', 'CRM000038', 'medico38@gmail.com', MD5('med38'), 'Dr. Médico 38'),
-(2, '11111111149', 'CRM000039', 'medico39@gmail.com', MD5('med39'), 'Dr. Médico 39'),
-(2, '11111111150', 'CRM000040', 'medico40@gmail.com', MD5('med40'), 'Dr. Médico 40'),
-(2, '11111111151', 'CRM000041', 'medico41@gmail.com', MD5('med41'), 'Dr. Médico 41'),
-(2, '11111111152', 'CRM000042', 'medico42@gmail.com', MD5('med42'), 'Dr. Médico 42'),
-(2, '11111111153', 'CRM000043', 'medico43@gmail.com', MD5('med43'), 'Dr. Médico 43'),
-(2, '11111111154', 'CRM000044', 'medico44@gmail.com', MD5('med44'), 'Dr. Médico 44'),
-(2, '11111111155', 'CRM000045', 'medico45@gmail.com', MD5('med45'), 'Dr. Médico 45'),
-(2, '11111111156', 'CRM000046', 'medico46@gmail.com', MD5('med46'), 'Dr. Médico 46'),
-(2, '11111111157', 'CRM000047', 'medico47@gmail.com', MD5('med47'), 'Dr. Médico 47'),
-(2, '11111111158', 'CRM000048', 'medico48@gmail.com', MD5('med48'), 'Dr. Médico 48'),
-(2, '11111111159', 'CRM000049', 'medico49@gmail.com', MD5('med49'), 'Dr. Médico 49'),
-(2, '11111111160', 'CRM000050', 'medico50@gmail.com', MD5('med50'), 'Dr. Médico 50');
+-- =========================
+-- MÉDICO (relevante)
+-- =========================
+INSERT INTO papeis_permissoes (papel_id, permissao_id) VALUES
+(2, 15),(2, 16),(2, 17),(2, 18),(2, 19), -- médicos (listar, criar, editar)
+(2, 20),(2, 21),(2, 22),                  -- vincular/desvincular paciente
+(2, 23),(2, 24),(2, 26),                  -- pacientes (listar, visualizar, editar)
+(2, 28),(2, 29),(2, 31),                  -- IA (criar, listar, visualizar_imagem)
+(2, 32),(2, 33),(2, 34),(2, 35),          -- Chat
+(2, 38),(2, 39),(2, 40);                  -- Anamnese (listar, criar, editar)
 
--- INSERT PACIENTES --
+-- =========================
+-- PACIENTE (limitado)
+-- =========================
+INSERT INTO papeis_permissoes (papel_id, permissao_id) VALUES
+(3, 24), -- paciente.visualizar
+(3, 32),(3, 33),(3, 35), -- chat.enviar, chat.listar, chat.visualizar
+(3, 31), -- IA.visualizar_imagem
+(3, 38); -- anamnese.listar
 
-INSERT INTO paciente (id_instituicao, cpf, nome, sexo, endereco, telefone, email, profissao, estado_civil, nome_cuidador, telefone_cuidador) VALUES
-(1,'11111111111','Ana Silva','F','Rua das Flores, 10','11990010001','ana.silva1@gmail.com','Professora','Solteira','Maria Silva','11988880001'),
-(1,'11111111112','Bruno Santos','M','Av. Paulista, 200','11990010002','bruno.santos2@gmail.com','Engenheiro','Casado','Carlos Santos','11988880002'),
-(1,'11111111113','Carla Oliveira','F','Rua Verde, 300','11990010003','carla.oliveira3@gmail.com','Enfermeira','Solteira','João Oliveira','11988880003'),
-(1,'11111111114','Diego Souza','M','Rua Azul, 45','11990010004','diego.souza4@gmail.com','Analista','Casado','Marina Souza','11988880004'),
-(1,'11111111115','Elisa Costa','F','Av. Central, 55','11990010005','elisa.costa5@gmail.com','Dentista','Solteira','Pedro Costa','11988880005'),
-(1,'11111111116','Fernando Lima','M','Rua das Laranjeiras, 12','11990010006','fernando.lima6@gmail.com','Médico','Casado','Paula Lima','11988880006'),
-(1,'11111111117','Gabriela Rocha','F','Rua Amarela, 78','11990010007','gabriela.rocha7@gmail.com','Advogada','Divorciada','Roberto Rocha','11988880007'),
-(1,'11111111118','Henrique Alves','M','Rua Nova, 15','11990010008','henrique.alves8@gmail.com','Administrador','Casado','Sônia Alves','11988880008'),
-(1,'11111111119','Isabela Martins','F','Rua Bela Vista, 40','11990010009','isabela.martins9@gmail.com','Arquiteta','Solteira','Patrícia Martins','11988880009'),
-(1,'11111111120','João Pereira','M','Av. Brasil, 500','11990010010','joao.pereira10@gmail.com','Motorista','Casado','Fernanda Pereira','11988880010'),
-(1,'11111111121','Karla Fernandes','F','Rua Rio Branco, 60','11990010011','karla.fernandes11@gmail.com','Psicóloga','Solteira','Cláudia Fernandes','11988880011'),
-(1,'11111111122','Lucas Oliveira','M','Rua do Sol, 35','11990010012','lucas.oliveira12@gmail.com','Programador','Solteiro','Patrícia Oliveira','11988880012'),
-(1,'11111111123','Mariana Silva','F','Rua da Paz, 72','11990010013','mariana.silva13@gmail.com','Estudante','Solteira','Helena Silva','11988880013'),
-(1,'11111111124','Nicolas Souza','M','Rua da Serra, 100','11990010014','nicolas.souza14@gmail.com','Mecânico','Casado','Ana Souza','11988880014'),
-(1,'11111111125','Olívia Castro','F','Rua das Hortas, 88','11990010015','olivia.castro15@gmail.com','Designer','Solteira','Luciana Castro','11988880015'),
-(1,'11111111126','Paulo Mendes','M','Rua das Palmeiras, 9','11990010016','paulo.mendes16@gmail.com','Professor','Casado','Cíntia Mendes','11988880016'),
-(1,'11111111127','Queila Barbosa','F','Rua Marrom, 77','11990010017','queila.barbosa17@gmail.com','Veterinária','Solteira','Regina Barbosa','11988880017'),
-(1,'11111111128','Rafael Teixeira','M','Rua das Acácias, 55','11990010018','rafael.teixeira18@gmail.com','Engenheiro Civil','Casado','Sara Teixeira','11988880018'),
-(1,'11111111129','Sabrina Dias','F','Av. Leste, 12','11990010019','sabrina.dias19@gmail.com','Farmacêutica','Solteira','Paulo Dias','11988880019'),
-(1,'11111111130','Tiago Nunes','M','Rua Oeste, 40','11990010020','tiago.nunes20@gmail.com','Consultor','Casado','Denise Nunes','11988880020'),
-(1,'11111111131','Ursula Freitas','F','Rua Jardim, 101','11990010021','ursula.freitas21@gmail.com','Bióloga','Casada','Renato Freitas','11988880021'),
-(1,'11111111132','Victor Cardoso','M','Av. Norte, 300','11990010022','victor.cardoso22@gmail.com','Eletricista','Casado','Carla Cardoso','11988880022'),
-(1,'11111111133','Wesley Andrade','M','Rua Sul, 25','11990010023','wesley.andrade23@gmail.com','Empresário','Casado','Débora Andrade','11988880023'),
-(1,'11111111134','Xênia Torres','F','Rua Alegre, 89','11990010024','xenia.torres24@gmail.com','Jornalista','Solteira','Rogério Torres','11988880024'),
-(1,'11111111135','Yasmin Ramos','F','Rua Verde Claro, 66','11990010025','yasmin.ramos25@gmail.com','Cozinheira','Casada','Mateus Ramos','11988880025'),
-(1,'11111111136','Zeca Martins','M','Rua das Árvores, 14','11990010026','zeca.martins26@gmail.com','Pedreiro','Casado','Beatriz Martins','11988880026'),
-(1,'11111111137','Alice Souza','F','Av. Atlântica, 75','11990010027','alice.souza27@gmail.com','Esteticista','Solteira','Renata Souza','11988880027'),
-(1,'11111111138','Breno Almeida','M','Rua Central, 22','11990010028','breno.almeida28@gmail.com','Policial','Casado','Cláudia Almeida','11988880028'),
-(1,'11111111139','Camila Duarte','F','Rua Bela, 91','11990010029','camila.duarte29@gmail.com','Publicitária','Solteira','Joana Duarte','11988880029'),
-(1,'11111111140','Daniel Barros','M','Rua das Palmeiras, 82','11990010030','daniel.barros30@gmail.com','Garçom','Casado','Natália Barros','11988880030'),
-(1,'11111111141','Elaine Rocha','F','Rua do Campo, 12','11990010031','elaine.rocha31@gmail.com','Contadora','Solteira','Silvana Rocha','11988880031'),
-(1,'11111111142','Felipe Souza','M','Rua Azul, 45','11990010032','felipe.souza32@gmail.com','Motorista','Casado','Sandra Souza','11988880032'),
-(1,'11111111143','Giovana Melo','F','Rua Dourada, 8','11990010033','giovana.melo33@gmail.com','Secretária','Solteira','Eduardo Melo','11988880033'),
-(1,'11111111144','Hugo Tavares','M','Rua Norte, 63','11990010034','hugo.tavares34@gmail.com','Técnico','Casado','Márcia Tavares','11988880034'),
-(1,'11111111145','Ingrid Pereira','F','Rua Nova Esperança, 11','11990010035','ingrid.pereira35@gmail.com','Psicóloga','Solteira','Sérgio Pereira','11988880035'),
-(1,'11111111146','Jonas Cruz','M','Rua das Orquídeas, 56','11990010036','jonas.cruz36@gmail.com','Padeiro','Casado','Elaine Cruz','11988880036'),
-(1,'11111111147','Kelly Moura','F','Rua Santa Luzia, 14','11990010037','kelly.moura37@gmail.com','Designer','Solteira','Patrícia Moura','11988880037'),
-(2,'11111111148','Leonardo Ramos','M','Rua Santa Maria, 99','11990010038','leonardo.ramos38@gmail.com','Fotógrafo','Casado','Tatiane Ramos','11988880038'),
-(2,'11111111149','Marina Nogueira','F','Rua das Oliveiras, 3','11990010039','marina.nogueira39@gmail.com','Cabeleireira','Solteira','Silvia Nogueira','11988880039'),
-(2,'11111111150','Nathan Ribeiro','M','Rua Pontal, 200','11990010040','nathan.ribeiro40@gmail.com','Pedagogo','Casado','Vera Ribeiro','11988880040'),
-(2,'11111111151','Otávia Souza','F','Rua Nova Vida, 22','11990010041','otavia.souza41@gmail.com','Estudante','Solteira','Célia Souza','11988880041'),
-(2,'11111111152','Pedro Alves','M','Rua Horizonte, 55','11990010042','pedro.alves42@gmail.com','Mecânico','Casado','Luciana Alves','11988880042'),
-(2,'11111111153','Quésia Gomes','F','Rua do Pôr-do-sol, 33','11990010043','quesia.gomes43@gmail.com','Auxiliar','Solteira','Mário Gomes','11988880043'),
-(2,'11111111154','Ricardo Campos','M','Av. do Mar, 70','11990010044','ricardo.campos44@gmail.com','Comerciante','Casado','Tânia Campos','11988880044'),
-(2,'11111111155','Sofia Almeida','F','Rua São Pedro, 13','11990010045','sofia.almeida45@gmail.com','Nutricionista','Solteira','Eliane Almeida','11988880045'),
-(2,'11111111156','Thiago Monteiro','M','Rua Monte Azul, 9','11990010046','thiago.monteiro46@gmail.com','Motorista','Casado','Marta Monteiro','11988880046'),
-(2,'11111111157','Úrsula Pires','F','Rua das Violetas, 19','11990010047','ursula.pires47@gmail.com','Professora','Casada','Nelson Pires','11988880047'),
-(2,'11111111158','Vitor Lima','M','Rua dos Lírios, 5','11990010048','vitor.lima48@gmail.com','Atendente','Solteiro','Cristina Lima','11988880048'),
-(2,'11111111159','Willian Ferreira','M','Rua Bela Rosa, 21','11990010049','willian.ferreira49@gmail.com','Estudante','Solteiro','Rita Ferreira','11988880049'),
-(2,'11111111160','Yara Rodrigues','F','Rua Primavera, 16','11990010050','yara.rodrigues50@gmail.com','Bancária','Casada','Renato Rodrigues','11988880050');
-
-
-#drop database tests_tcc;
+##############################################################################################
+INSERT INTO usuarios_papeis (usuario_id, papel_id) VALUES
+(1, 1), -- admin
+(2, 2), -- medico
+(3, 3); -- paciente
+*/
+#drop database tcc25;

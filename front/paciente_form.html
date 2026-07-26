@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Paciente - MedInsight AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/modern.css">
+</head>
+
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem;">
+    <div class="card" style="max-width: 600px; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 id="form-title" style="font-size: 1.5rem; font-weight: 700;">Novo Paciente</h1>
+            <button onclick="history.back()" class="btn"
+                style="background: var(--glass-bg); color: var(--text-muted); font-size: 0.875rem;">Voltar</button>
+        </div>
+
+        <form id="pacienteForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div style="grid-column: span 2;">
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Nome
+                    Completo</label>
+                <input type="text" name="nome" id="nome" required
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">CPF</label>
+                <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" required
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Email</label>
+                <input type="email" name="email" id="email" required
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div id="passwordContainer">
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Senha
+                    de Acesso</label>
+                <input type="password" name="senha" id="senha" placeholder="Mínimo 6 caracteres"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Telefone</label>
+                <input type="text" name="telefone" id="telefone"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Sexo</label>
+                <select name="sexo" id="sexo"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+                    <option value="">Selecione</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="O">Outro</option>
+                </select>
+            </div>
+            <div>
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Estado
+                    Civil</label>
+                <input type="text" name="estado_civil" id="estado_civil"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div style="grid-column: span 2;">
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Endereço</label>
+                <input type="text" name="endereco" id="endereco"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Profissão</label>
+                <input type="text" name="profissao" id="profissao"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Nome
+                    do Cuidador</label>
+                <input type="text" name="nome_cuidador" id="nome_cuidador"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <div style="grid-column: span 2;">
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Telefone
+                    do Cuidador</label>
+                <input type="text" name="telefone_cuidador" id="telefone_cuidador"
+                    style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="grid-column: span 2; padding: 1rem; margin-top: 1rem;">Salvar Paciente</button>
+        </form>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const pacienteId = urlParams.get('id');
+
+        if (pacienteId) {
+            document.getElementById('form-title').innerText = "Editar Paciente";
+            document.getElementById('senha').placeholder = "Deixe em branco para manter";
+            loadPaciente().catch(err => console.error(err));
+        }
+
+
+        async function loadPaciente() {
+            const res = await fetch(`${API_URL}/pacientes/${pacienteId}`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const result = await res.json();
+            const data = result.dados;
+            document.getElementById('nome').value = data.nome || '';
+            document.getElementById('cpf').value = data.cpf || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('telefone').value = data.telefone || '';
+            document.getElementById('sexo').value = data.sexo || '';
+            document.getElementById('endereco').value = data.endereco || '';
+            document.getElementById('profissao').value = data.profissao || '';
+            document.getElementById('estado_civil').value = data.estado_civil || '';
+            document.getElementById('nome_cuidador').value = data.nome_cuidador || '';
+            document.getElementById('telefone_cuidador').value = data.telefone_cuidador || '';
+        }
+
+        document.getElementById('pacienteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Strip CPF formatting (dots, dashes)
+            if (data.cpf) data.cpf = data.cpf.replace(/[^0-9]/g, '').substring(0, 11);
+
+            const method = pacienteId ? 'PUT' : 'POST';
+            const url = pacienteId ? `${API_URL}/pacientes/${pacienteId}` : `${API_URL}/pacientes`;
+            console.log(data);
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    const msg = (result.dados && result.dados.msg) || result.msg || "Paciente salvo com sucesso!";
+                    alert(msg);
+                    window.location.href = 'pacientes.html';
+                } else {
+                    const errMsg = (result.dados && result.dados.msg) || result.erro || result.msg || "Falha ao salvar";
+                    alert("Erro: " + errMsg);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao salvar paciente: " + err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

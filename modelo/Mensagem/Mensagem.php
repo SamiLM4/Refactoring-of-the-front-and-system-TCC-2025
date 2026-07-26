@@ -6,6 +6,7 @@ class Mensagem
     private $cpf_medico;
     private $mensagem;
     private $origem;
+    private $instituicao;
 
     // Setters
     public function setCpfMedico($cpf_medico)
@@ -23,6 +24,10 @@ class Mensagem
         $this->origem = $origem;
     }
 
+    public function setInstituicao($instituicao)
+    {
+        $this->instituicao = $instituicao;
+    }
     // Getters
     public function getCpfMedico()
     {
@@ -39,33 +44,41 @@ class Mensagem
         return $this->origem;
     }
 
-    // Enviar mensagem (usado por médico)
-    public function enviar()
+    public function getInstituicao()
     {
-        $meuBanco = new Banco();
-        $conn = $meuBanco->getConexao();
-
-        // Verifica conexão
-        if ($conn->connect_error) {
-            die("Erro de conexão: " . $conn->connect_error);
-        }
-
-        $sql = "INSERT INTO mensagens_chat (cpf_medico, mensagem, origem) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-
-        if ($stmt) {
-            $stmt->bind_param("iss", $this->cpf_medico, $this->mensagem, $this->origem);
-            if ($stmt->execute()) {
-                return true;
-            } else {
-                error_log("Erro ao enviar mensagem: " . $stmt->error);
-                return false;
-            }
-        } else {
-            error_log("Erro na preparação do envio: " . $conn->error);
-            return false;
-        }
+        return $this->instituicao;
     }
+
+    // Enviar mensagem (usado por médico)
+public function enviar()
+{
+    $meuBanco = new Banco();
+    $conn = $meuBanco->getConexao();
+
+    if ($conn->connect_error) {
+        die("Erro de conexão: " . $conn->connect_error);
+    }
+
+    $sql = "INSERT INTO mensagens_chat (id_instituicao, cpf_medico, mensagem, origem) VALUES (?, ?, ?, ?)";
+                                        
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        error_log("Erro na preparação: " . $conn->error);
+        return false;
+    }
+
+    // Corrigido bind_param: cpf_medico é string
+    $stmt->bind_param("isss", $this->instituicao, $this->cpf_medico, $this->mensagem, $this->origem);
+
+    if (!$stmt->execute()) {
+        error_log("Erro ao executar: " . $stmt->error);
+        return false;
+    }
+
+    return true;
+}
+
 
     // ADM responder mensagem
     public function responder()
@@ -80,9 +93,9 @@ class Mensagem
         $meuBanco = new Banco();
         $conn = $meuBanco->getConexao();
 
-        $sql = "SELECT * FROM mensagens_chat WHERE cpf_medico = ? ORDER BY data_envio ASC";
+        $sql = "SELECT * FROM mensagens_chat WHERE cpf_medico = ? AND id_instituicao = ? ORDER BY data_envio ASC";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $cpf_medico);
+        $stmt->bind_param("ii", $cpf_medico, $this->instituicao);
 
         if ($stmt->execute()) {
             $result = $stmt->get_result();
@@ -105,18 +118,26 @@ class Mensagem
         $conn = $meuBanco->getConexao();
 
         $sql = "SELECT m.*, med.nome AS nome_medico 
-                FROM mensagens_chat m 
-                JOIN medico med ON m.cpf_medico = med.cpf 
-                ORDER BY m.data_envio DESC";
+        FROM mensagens_chat m 
+        JOIN medico med ON m.cpf_medico = med.cpf 
+        WHERE m.id_instituicao = ?
+        ORDER BY m.data_envio DESC";
 
-        $result = $conn->query($sql);
+        // Prepara e executa a query
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $this->instituicao);
+        $stmt->execute();
+
+        // Recupera o resultado do statement
+        $result = $stmt->get_result();
+
         $mensagens = [];
-
         while ($linha = $result->fetch_assoc()) {
             $mensagens[] = $linha;
         }
 
         return $mensagens;
+
     }
 }
 ?>

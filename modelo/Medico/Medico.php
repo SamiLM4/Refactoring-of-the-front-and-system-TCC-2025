@@ -358,7 +358,7 @@ class Medico
         }
 
 
-        $sql = "SELECT * FROM medico WHERE nome LIKE ? AND id_insituicao = ?";
+        $sql = "SELECT * FROM medico WHERE nome LIKE ? AND id_instituicao = ?";
         $stm = $conexao->prepare($sql);
 
         $busca = "%" . $this->nome . "%";
@@ -370,7 +370,7 @@ class Medico
 
         // Se não encontrou pelo nome, tenta pelo email
         if ($resultado->num_rows === 0) {
-            $sql = "SELECT * FROM medico WHERE email LIKE ? AND id_insituicao = ?";
+            $sql = "SELECT * FROM medico WHERE email LIKE ? AND id_instituicao = ?";
             $stm = $conexao->prepare($sql);
 
             $busca = "%" . $this->nome . "%";

@@ -1,422 +1,294 @@
 <?php
 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Max-Age: 86400");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once __DIR__ . "/vendor/autoload.php";
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+
+define('BASE_PATH', __DIR__);
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+// Simple Autoloader for MVC
+spl_autoload_register(function ($class) {
+    $paths = [
+        __DIR__ . '/controle/',
+        __DIR__ . '/modelo/'
+    ];
+    foreach ($paths as $path) {
+        $file = $path . $class . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+});
+
 require_once("modelo/Router.php");
 
-$roteador = new Router();
+function proteger(array $permissoes, $handler, bool $exigirLicenca = false)
+{
+    return function (...$params) use ($permissoes, $handler, $exigirLicenca) {
+        require_once __DIR__ . "/middleware/authMiddleware.php";
+        $usuario = authMiddleware($permissoes, $exigirLicenca);
+        $GLOBALS['usuario'] = $usuario;
+
+        // VERIFICAR ACESSO DO PACIENTE (SOMENTE SEUS PRÓPRIOS DADOS)
+        $isPaciente = false;
+        foreach ($usuario['papeis'] as $p) {
+            if (strtoupper($p['nome']) === 'PACIENTE') {
+                $isPaciente = true;
+                break;
+            }
+        }
+
+        if ($isPaciente && empty($usuario['admin_owner'])) {
+            $requestUri = $_SERVER['REQUEST_URI'];
+            // Check if route accesses a specific paciente_id endpoint
+            if (strpos($requestUri, '/api/pacientes/') !== false && isset($params[0]) && is_numeric($params[0])) {
+                if ((int)$params[0] !== $usuario['paciente_id']) {
+                    http_response_code(403);
+                    echo json_encode(["erro" => "Acesso negado. Você só pode acessar seus próprios dados."]);
+                    exit;
+                }
+            }
+        }
+
+        if (is_string($handler) && strpos($handler, '@') !== false) {
+            list($controllerName, $method) = explode('@', $handler);
+            // No need to require_once here anymore due to autoloader
+            $controller = new $controllerName();
+            return $controller->$method(...$params);
+        }
+
+        if (is_callable($handler)) {
+            return $handler(...$params);
+        }
+
+        // Available to legacy procedural endpoints (anamnese endpoints)
+        $pacienteId = $params[0] ?? null;
+
+        require_once __DIR__ . "/" . $handler;
+    };
+}
+
+
+$router = new Router();
+
+$router->get("/api/planos", "PlanoController@list");
+$router->post("/api/licencas", "LicencaController@store");
 
-// paciente
 
-$roteador->get("/paciente/(\d+)", function ($pag) {
-
-    require_once("controle/paciente/PacienteRead.php");
-});
-
-
-$roteador->get("/paciente/cpf/([^\/]+)", function ($valor) {
-    require_once("controle/paciente/pacienteReadID.php");
-});
-
-$roteador->get("/paciente/(\d+)/diagnostico", function ($pag) {
-    require_once("controle/paciente/pacienteReadDiagnostico.php");
-});
-
-$roteador->get("/paciente/filtrar/([^/]+)/diagnostico", function ($filtro) {
-    require_once("controle/paciente/pacienteReadDIDiagnostico.php");
-});
-
-$roteador->post("/paciente", function () {
-
-    require_once("controle/paciente/pacienteCadastrar.php");
-});
-
-
-
-$roteador->put("/paciente/(\d+)", function ($cpf) {
-
-    require_once("controle/paciente/pacienteUpdate.php");
-});
-
-
-$roteador->delete("/paciente/(\d+)", function ($cpf) {
-
-    require_once("controle/paciente/pacienteDelete.php");
-});
-
-// medico
-
-
-$roteador->post("/medico/login", function () {
-
-    require_once("controle/medico/medicoLogin.php");
-});
-
-$roteador->get("/medico/(\d+)", function ($pag) {
-
-    require_once("controle/medico/medicoRead.php");
-});
-
-//
-$roteador->get("/medico/gerarpacientes/(\d+)", function ($pag): void {
-    require_once("controle/medico/medicoReadPacientes.php");
-});
-
-//
-
-$roteador->get("/medico/cpf/(\d+)/(\d+)", function ($cpf, $pagina) {
-
-    require_once("controle/medico/medicoReadCPF.php");
-});
-
-$roteador->get("/medico/crm/(\d+)", function ($crm) {
-
-    require_once("controle/medico/medicoReadCRM.php");
-});
-
-$roteador->get("/medico/nome/([^/]+)", function ($nome) {
-    require_once("controle/medico/medicoReadNome.php");
-});
-
-$roteador->get("/medico/filtro/([^/]+)", function ($filtro) {
-    require_once("controle/medico/medicoReadFiltro.php");
-});
-
-
-$roteador->post("/medico", function () {
-
-    require_once("controle/medico/medicoCadastrar.php");
-});
-
-
-
-$roteador->put("/medico/(\d+)", function ($cpf) {
-
-    require_once("controle/medico/medicoUpdate.php");
-});
-
-
-$roteador->delete("/medico/(\d+)", function ($cpf) {
-
-    require_once("controle/medico/medicoDelete.php");
-});
-
-
-// FICHA
-
-$roteador->get("/ficha/(\d+)", function ($cpf) {
-    require_once("controle/ficha/fichaRead.php");
-});
-
-
-$roteador->post("/ficha/(\d+)", function ($cpf) {
-    require_once("controle/ficha/fichaCadastrar.php");
-});
-
-$roteador->put("/ficha/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaUpdate.php");
-});
-
-
-$roteador->delete("/ficha/(\d+)", function ($cpf) {
-    require_once("controle/ficha/fichaDelete.php");
-});
-
-$roteador->post("/ficha/pdf", function () {
-    require_once("controle/ficha/pdfFicha.php");
-});
-
-// ADM 
-
-$roteador->post("/adm/login", function () {
-
-    require_once("controle/administrador/administradorLogin.php");
-});
-
-$roteador->get("/adm/(\d+)", function ($pag) {
-
-    require_once("controle/administrador/administradorRead.php");
-});
-
-$roteador->get("/adm/filtrar/([^/]+)", function ($filtro) {
-
-    require_once("controle/administrador/administradorReadID.php");
-});
-
-$roteador->post("/adm", function () {
-
-    require_once("controle/administrador/administradorCadastrar.php");
-});
-
-$roteador->put("/adm", function () {
-
-    require_once("controle/administrador/administradorUpdate.php");
-});
-
-$roteador->delete("/adm/(\d+)", function ($id) {
-
-    require_once("controle/administrador/administradorDelete.php");
-});
-
-
-// IA 
-
-
-$roteador->post("/ia", function () {
-    require_once("controle/ia/iaCadastrar.php");
-});
-
-$roteador->delete("/ia/(\d+)", function ($cpf) {
-    require_once("controle/ia/iaDelete.php");
-});
-
-$roteador->get("/ia/(\d+)", function ($cpf) {
-    require_once("controle/ia/iaRead.php");
-});
-
-$roteador->get("/ia/img/(\d+)", function ($cpf) {
-    require_once("controle/ia/iaReadImg.php");
-});
-// PDF
-
-$roteador->get("/ficha/pdf/(\d+)", function ($cpf) {
-    require_once("controle/ficha/fichaPDF.php");
-});
-
-// MENSAGEM
-
-$roteador->post("/mensagem/enviar/(\d+)", function ($cpf_medico) {
-    require_once("controle/mensagem/mensagemEnviar.php");
-});
-
-$roteador->get("/mensagem/listar/(\d+)", function ($cpf_medico) {
-    require_once("controle/mensagem/mensagemListar.php");
-});
 
 /*
-$roteador->get("/ficha/diagnostico/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
-
-$roteador->get("/ficha/examefisico/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
-
-$roteador->get("/ficha/examescomplementares/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
-
-$roteador->get("/ficha/historicomedico/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
-
-$roteador->get("/ficha/historicosocial/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
-
-$roteador->get("/ficha/planotratamento/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
-
-$roteador->get("/ficha/qualidadevidaem/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
-
-$roteador->get("/ficha/sintomas/(\d+)", function ($id) {
-    require_once("controle/ficha/fichaReadID.php");
-});
+|--------------------------------------------------------------------------
+| Instituicoes +
+|--------------------------------------------------------------------------
 */
+$router->mount('/api/instituicoes', function () use ($router) {
+    $router->post('/register', 'InstituicaoController@register');
+    $router->get('/(\d+)', proteger(["instituicao.visualizar"], "InstituicaoController@show", true));
+    $router->put('/', proteger(["instituicao.editar"], "InstituicaoController@update", true));
+});
+
+
+
 /*
-    // diagnostico
+|--------------------------------------------------------------------------
+| AUTH +
+|--------------------------------------------------------------------------
+*/
+$router->post("/api/auth/login", "AuthController@login");
+$router->post("/api/auth/refresh", "AuthController@refresh");
+$router->post("/api/auth/logout", "AuthController@logout");
+$router->post("/api/auth/me", proteger([], "AuthController@me"));
 
-    $roteador->get("/diagnostico/(\d+)", function ($pagina) {
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD STATS
+|--------------------------------------------------------------------------
+*/
+$router->get("/api/dashboard/stats", proteger([], "DashboardController@getStats"));
+$router->get("/api/dashboard/charts", proteger([], "DashboardController@getCharts"));
 
-        require_once("controle/diagnostico/diagnosticoRead.php");
-    });
-
-
-    $roteador->get("/diagnostico/(\d+)", function ($id_a) {
-
-        require_once("controle/diagnostico/diagnosticoReadID.php");
-    });
-
-
-    $roteador->post("/diagnostico", function () {
-
-        require_once("controle/diagnostico/diagnosticoCadastrar.php");
-    });
-
-
-
-    $roteador->put("/diagnostico/(\d+)", function ($id_a) {
-
-        require_once("controle/diagnostico/diagnosticoUpdate.php");
-    });
-
-
-    $roteador->delete("/diagnostico/(\d+)", function ($id_a) {
-
-        require_once("controle/diagnostico/diagnosticoDelete.php");
-    });
-
-    // sintomas
-
-    $roteador->get("/sintomas", function () {
-        require_once("controle/sintomas/sintomasRead.php");
-    });
-
-    $roteador->get("/sintomas/(\d+)", function ($id) {
-        require_once("controle/sintomas/sintomasReadID.php");
-    });
-
-    $roteador->post("/sintomas", function () {
-        require_once("controle/sintomas/sintomasCadastrar.php");
-    });
-
-    $roteador->put("/sintomas/(\d+)", function ($id) {
-        require_once("controle/sintomas/sintomasUpdate.php");
-    });
-
-    $roteador->delete("/sintomas/(\d+)", function ($id) {
-        require_once("controle/sintomas/sintomasDelete.php");
-    });
-
-
-    // historico_medico
-
-    $roteador->get("/historico_medico", function () {
-        require_once("controle/historico_medico/historicoMedicoRead.php");
-    });
-
-    $roteador->get("/historico_medico/(\d+)", function ($id) {
-        require_once("controle/historico_medico/historicoMedicoReadID.php");
-    });
-
-    $roteador->post("/historico_medico", function () {
-        require_once("controle/historico_medico/historicoMedicoCadastrar.php");
-    });
-
-    $roteador->put("/historico_medico/(\d+)", function ($id) {
-        require_once("controle/historico_medico/historicoMedicoUpdate.php");
-    });
-
-    $roteador->delete("/historico_medico/(\d+)", function ($id) {
-        require_once("controle/historico_medico/historicoMedicoDelete.php");
-    });
-
-
-    // historico_social
-
-    $roteador->get("/historico_social", function () {
-        require_once("controle/historico_social/historicoSocialRead.php");
-    });
-
-    $roteador->get("/historico_social/(\d+)", function ($id) {
-        require_once("controle/historico_social/historicoSocialReadID.php");
-    });
-
-    $roteador->post("/historico_social", function () {
-        require_once("controle/historico_social/historicoSocialCadastrar.php");
-    });
-
-    $roteador->put("/historico_social/(\d+)", function ($id) {
-        require_once("controle/historico_social/historicoSocialUpdate.php");
-    });
-
-    $roteador->delete("/historico_social/(\d+)", function ($id) {
-        require_once("controle/historico_social/historicoSocialDelete.php");
-    });
-
-
-    // qualidade_vida_em
-
-    $roteador->get("/qualidade_vida_em", function () {
-        require_once("controle/qualidade_vida_em/qualidadeVidaRead.php");
-    });
-
-    $roteador->get("/qualidade_vida_em/(\d+)", function ($id) {
-        require_once("controle/qualidade_vida_em/qualidadeVidaReadID.php");
-    });
-
-    $roteador->post("/qualidade_vida_em", function () {
-        require_once("controle/qualidade_vida_em/qualidadeVidaCadastrar.php");
-    });
-
-    $roteador->put("/qualidade_vida_em/(\d+)", function ($id) {
-        require_once("controle/qualidade_vida_em/qualidadeVidaUpdate.php");
-    });
-
-    $roteador->delete("/qualidade_vida_em/(\d+)", function ($id) {
-        require_once("controle/qualidade_vida_em/qualidadeVidaDelete.php");
-    });
-
-
-    // exame_fisico
-
-    $roteador->get("/exame_fisico", function () {
-        require_once("controle/exame_fisico/exameFisicoRead.php");
-    });
-
-    $roteador->get("/exame_fisico/(\d+)", function ($id) {
-        require_once("controle/exame_fisico/exameFisicoReadID.php");
-    });
-
-    $roteador->post("/exame_fisico", function () {
-        require_once("controle/exame_fisico/exameFisicoCadastrar.php");
-    });
-
-    $roteador->put("/exame_fisico/(\d+)", function ($id) {
-        require_once("controle/exame_fisico/exameFisicoUpdate.php");
-    });
-
-    $roteador->delete("/exame_fisico/(\d+)", function ($id) {
-        require_once("controle/exame_fisico/exameFisicoDelete.php");
-    });
-
-
-    // exames_complementares
-
-    $roteador->get("/exames_complementares", function () {
-        require_once("controle/exames_complementares/examesComplementaresRead.php");
-    });
-
-    $roteador->get("/exames_complementares/(\d+)", function ($id) {
-        require_once("controle/exames_complementares/examesComplementaresReadID.php");
-    });
-
-    $roteador->post("/exames_complementares", function () {
-        require_once("controle/exames_complementares/examesComplementaresCadastrar.php");
-    });
-
-    $roteador->put("/exames_complementares/(\d+)", function ($id) {
-        require_once("controle/exames_complementares/examesComplementaresUpdate.php");
-    });
-
-    $roteador->delete("/exames_complementares/(\d+)", function ($id) {
-        require_once("controle/exames_complementares/examesComplementaresDelete.php");
-    });
-
-
-    // plano_tratamento
-
-    $roteador->get("/plano_tratamento", function () {
-        require_once("controle/plano_tratamento/planoTratamentoRead.php");
-    });
-
-    $roteador->get("/plano_tratamento/(\d+)", function ($id) {
-        require_once("controle/plano_tratamento/planoTratamentoReadID.php");
-    });
-
-    $roteador->post("/plano_tratamento", function () {
-        require_once("controle/plano_tratamento/planoTratamentoCadastrar.php");
-    });
-
-    $roteador->put("/plano_tratamento/(\d+)", function ($id) {
-        require_once("controle/plano_tratamento/planoTratamentoUpdate.php");
-    });
-
-    $roteador->delete("/plano_tratamento/(\d+)", function ($id) {
-        require_once("controle/plano_tratamento/planoTratamentoDelete.php");
-    });
+/*
+|--------------------------------------------------------------------------
+| USUÁRIOS + +
+|--------------------------------------------------------------------------
 */
 
-$roteador->run();
-?>
+$router->get(
+    "/api/usuarios",
+    proteger(["usuario.listar"], "UsuarioController@list", true)
+);
+
+$router->get(
+    "/api/usuarios/(\d+)",
+    proteger(["usuario.visualizar"], "UsuarioController@show", true)
+);
+
+$router->post(
+    "/api/usuarios",
+    proteger(["usuario.criar"], "UsuarioController@store", true)
+);
+
+$router->put(
+    "/api/usuarios/(\d+)",
+    proteger(["usuario.editar"], "UsuarioController@update", true)
+);
+
+$router->delete(
+    "/api/usuarios/(\d+)",
+    proteger(["usuario.deletar"], "UsuarioController@delete", true)
+);
+
+// Papeis e permissoes
+$router->get("/api/papeis", proteger(["papel.listar"], "PapelController@list", true));
+$router->post("/api/papeis", proteger(["papel.criar"], "PapelController@store", true));
+$router->delete("/api/papeis/(\d+)", proteger(["papel.deletar"], "PapelController@delete", true));
+
+$router->get("/api/permissoes", proteger(["permissao.listar"], "PapelController@listPermissions", true));
+
+$router->get("/api/papeis/permissoes/(\d+)", proteger(["permissao.listar"], "PapelController@getRolePermissions", true));
+$router->put("/api/papeis/permissoes/(\d+)", proteger(["permissao.listar"], "PapelController@updatePermissions", true));
+
+   // Procedural routes for papel/permissoes removed in favor of PapelController methods powyżej
+
+// Administradores
+$router->get("/api/admins", proteger(["admin.listar"], "AdminController@list", true));
+$router->get("/api/admins/(\d+)", proteger(["admin.visualizar"], "UsuarioController@show", true));
+$router->put("/api/admins/(\d+)", proteger(["admin.editar"], "AdminController@update", true));
+$router->delete("/api/admins/(\d+)", proteger(["admin.deletar"], "AdminController@delete", true));
+$router->post("/api/admins/papel", proteger(["papel.atribuir"], "AdminController@attachRole", true));
+
+/*
+|--------------------------------------------------------------------------
+| MEDICOS + +
+|--------------------------------------------------------------------------
+*/
+
+$router->get("/api/medicos", proteger(["medico.listar"], "MedicoController@list"));
+$router->get("/api/medicos/(\d+)", proteger(["medico.visualizar"], "MedicoController@show"));
+$router->get("/api/medicos/crm/([^/]+)", proteger(["medico.visualizar"], "MedicoController@showByCrm"));
+$router->post("/api/medicos", proteger(["medico.criar"], "MedicoController@store"));
+$router->put("/api/medicos/(\d+)", proteger(["medico.editar"], "MedicoController@update"));
+$router->delete("/api/medicos/(\d+)", proteger(["medico.deletar"], "MedicoController@delete"));
+
+$router->post("/api/medicos/(\d+)/pacientes", proteger(["medico.vincular_paciente"], "MedicoController@attachPaciente"));
+$router->get("/api/medicos/(\d+)/pacientes", proteger(["medico.listar_pacientes"], "MedicoController@listPacientes"));
+$router->delete("/api/medicos/(\d+)/pacientes/(\d+)", proteger(["medico.desvincular_paciente"], "MedicoController@detachPaciente"));
+
+
+/*
+|--------------------------------------------------------------------------
+| PACIENTES + +
+|--------------------------------------------------------------------------
+*/
+
+$router->get("/api/pacientes", proteger(["paciente.listar"], "PacienteController@list"));
+$router->get("/api/pacientes/(\d+)", proteger(["paciente.visualizar"], "PacienteController@show"));
+$router->get("/api/pacientes/cpf/([^/]+)", proteger(["paciente.visualizar"], "PacienteController@showByCpf"));
+$router->post("/api/pacientes", proteger(["paciente.criar"], "PacienteController@store"));
+$router->put("/api/pacientes/(\d+)", proteger(["paciente.editar"], "PacienteController@update"));
+$router->delete("/api/pacientes/(\d+)", proteger(["paciente.deletar"], "PacienteController@delete"));
+
+
+$router->post("/api/ia/analisar", proteger(["ia.criar"], "IAController@analyze"));
+$router->get("/api/ia/historico", proteger(["ia.listar"], "IAController@list"));
+$router->get("/api/pacientes/(\d+)/ia", proteger(["ia.listar"], "IAController@listByPaciente"));
+$router->delete("/api/ia/(\d+)", proteger(["ia.deletar"], "IAController@delete"));
+
+/*
+|--------------------------------------------------------------------------
+| CHAT / MENSAGENS
+|--------------------------------------------------------------------------
+*/
+$router->get("/api/chat/contatos", proteger(["chat.listar"], "MensagemController@getContatos"));
+$router->get("/api/chat/mensagens", proteger(["chat.listar"], "MensagemController@list"));
+$router->post("/api/chat/mensagens", proteger(["chat.enviar"], "MensagemController@store"));
+
+$router->get("/api/chat/usuario/(\d+)", proteger(["chat.listar"], "MensagemController@getChat"));
+$router->post("/api/chat", proteger(["chat.enviar"], "MensagemController@store"));
+
+
+/*
+|--------------------------------------------------------------------------
+| menssagens + +
+|--------------------------------------------------------------------------
+*/
+
+$router->put(
+    "/api/chat/(\d+)/lida",
+    proteger(["chat.marcar_lida"], "MensagemController@marcarLida")
+);
+
+
+
+/*
+|--------------------------------------------------------------------------
+| auditoria +
+|--------------------------------------------------------------------------
+*/
+
+// Auditoria
+$router->get("/api/auditoria", proteger(["auditoria.listar"], "AuditoriaController@list"));
+$router->get("/api/auditoria/paciente/(\d+)", proteger(["auditoria.listar"], "AuditoriaController@listByPaciente"));
+
+
+
+// ANAMNESE (Ficha clínica do paciente)
+
+// Diagnósticos
+$router->get("/api/pacientes/(\d+)/diagnosticos", proteger(["anamnese.listar"], "AnamneseController@listDiagnosticos"));
+$router->post("/api/pacientes/(\d+)/diagnosticos", proteger(["anamnese.criar"], "AnamneseController@storeDiagnostico"));
+$router->put("/api/diagnosticos/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updateDiagnostico"));
+$router->delete("/api/diagnosticos/(\d+)", proteger(["anamnese.deletar"], "AnamneseController@deleteDiagnostico"));
+
+// Sintomas
+$router->get("/api/pacientes/(\d+)/sintomas", proteger(["anamnese.listar"], "AnamneseController@listSintomas"));
+$router->post("/api/pacientes/(\d+)/sintomas", proteger(["anamnese.criar"], "AnamneseController@storeSintoma"));
+$router->put("/api/sintomas/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updateSintoma"));
+
+// Histórico Médico
+$router->get("/api/pacientes/(\d+)/historico-medico", proteger(["anamnese.listar"], "AnamneseController@listHistoricoMedico"));
+$router->post("/api/pacientes/(\d+)/historico-medico", proteger(["anamnese.criar"], "AnamneseController@storeHistoricoMedico"));
+$router->put("/api/historico-medico/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updateHistoricoMedico"));
+
+// Histórico Social
+$router->get("/api/pacientes/(\d+)/historico-social", proteger(["anamnese.listar"], "AnamneseController@listHistoricoSocial"));
+$router->post("/api/pacientes/(\d+)/historico-social", proteger(["anamnese.criar"], "AnamneseController@storeHistoricoSocial"));
+$router->put("/api/historico-social/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updateHistoricoSocial"));
+
+// Qualidade Vida
+$router->get("/api/pacientes/(\d+)/qualidade-vida", proteger(["anamnese.listar"], "AnamneseController@listQualidadeVida"));
+$router->post("/api/pacientes/(\d+)/qualidade-vida", proteger(["anamnese.criar"], "AnamneseController@storeQualidadeVida"));
+$router->put("/api/qualidade-vida/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updateQualidadeVida"));
+
+// Exame Físico
+$router->get("/api/pacientes/(\d+)/exame-fisico", proteger(["anamnese.listar"], "AnamneseController@listExameFisico"));
+$router->post("/api/pacientes/(\d+)/exame-fisico", proteger(["anamnese.criar"], "AnamneseController@storeExameFisico"));
+$router->put("/api/exame-fisico/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updateExameFisico"));
+
+// Exames Complementares
+$router->get("/api/pacientes/(\d+)/exames-complementares", proteger(["anamnese.listar"], "AnamneseController@listExamesComplementares"));
+$router->post("/api/pacientes/(\d+)/exames-complementares", proteger(["anamnese.criar"], "AnamneseController@storeExamesComplementares"));
+$router->put("/api/exames-complementares/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updateExamesComplementares"));
+
+// Plano Tratamento
+$router->get("/api/pacientes/(\d+)/plano-tratamento", proteger(["anamnese.listar"], "AnamneseController@listPlanoTratamento"));
+$router->post("/api/pacientes/(\d+)/plano-tratamento", proteger(["anamnese.criar"], "AnamneseController@storePlanoTratamento"));
+$router->put("/api/plano-tratamento/(\d+)", proteger(["anamnese.editar"], "AnamneseController@updatePlanoTratamento"));
+
+$router->run();
