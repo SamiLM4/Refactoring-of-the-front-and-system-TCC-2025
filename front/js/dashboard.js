@@ -207,8 +207,15 @@ async function loadStats() {
             apiInfo.innerHTML = `IA Generativa em Uso: <strong>${stats.ia_api || 'Desconhecida'}</strong> &nbsp;|&nbsp; Diagnósticos Feitos: <strong>${stats.ia_diagnosticos || 0}</strong> &nbsp;|&nbsp; Requisições Restantes: <strong>Ilimitado</strong> (no backend atual)`;
         }
 
-        if (document.getElementById('genderChart') && stats.gender_stats) {
-            initGenderChart(stats.gender_stats);
+        const genderEl = document.getElementById('genderChart');
+        if (genderEl) {
+            if (stats.gender_stats && stats.gender_stats.length > 0) {
+                initGenderChart(stats.gender_stats);
+            } else {
+                console.warn('gender_stats ausente ou vazio:', stats.gender_stats);
+                // Renderiza gráfico com placeholder
+                initGenderChart([]);
+            }
         }
 
     } catch (error) {

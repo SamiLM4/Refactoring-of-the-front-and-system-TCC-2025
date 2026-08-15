@@ -12,41 +12,116 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
+            align-items: start;
+        }
+
+        /* Card da direita mantém altura fixa para não bugar o layout */
+        .ia-right-card {
+            height: 420px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ia-right-card h3 {
+            margin-bottom: 1rem;
+            flex-shrink: 0;
         }
 
         .log-container {
             background: rgba(0, 0, 0, 0.3);
             padding: 1rem;
             border-radius: 0.5rem;
-            height: 300px;
+            flex: 1;
             overflow-y: auto;
             font-family: monospace;
             font-size: 0.875rem;
             color: #10b981;
+            box-sizing: border-box;
         }
 
         .ai-result {
             border-left: 4px solid var(--primary);
-            padding: 1.5rem;
+            padding: 1rem;
             background: var(--glass-bg);
             border-radius: 0.5rem;
-            margin-top: 1.5rem;
-            display: none;
-            animation: fadeIn 0.5s ease-out;
-            max-height: 400px;
+            flex: 1;
             overflow-y: auto;
+            box-sizing: border-box;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* Histórico de laudos */
+        .historico-card {
+            margin-top: 2rem;
+        }
+
+        .laudo-item {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .laudo-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .laudo-item-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .btn-excluir {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.3);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+
+        .btn-excluir:hover {
+            background: rgba(239,68,68,0.3);
+        }
+
+        .imagens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 0.75rem;
+        }
+
+        .imagens-grid a img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+
+        .imagens-grid a img:hover {
+            transform: scale(1.05);
+        }
+
+        .laudo-text {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+            color: var(--text-muted);
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -73,47 +148,62 @@
                 <p style="color: var(--text-muted);">Processamento avançado de prontuários em tempo real.</p>
             </header>
 
+            <!-- Grid principal: formulário | console -->
             <div class="ia-grid">
+                <!-- Coluna esquerda: formulário -->
                 <div class="card">
-                    <h3 style="margin-bottom: 1.5rem;">Dados Praz Prontuário</h3>
+                    <h3 style="margin-bottom: 1.5rem;">Novo Diagnóstico</h3>
                     <div style="margin-bottom: 1.5rem;">
-                        <label
-                            style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Selecionar
-                            Paciente</label>
-                        <select id="paciente-select"
+                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Selecionar Paciente</label>
+                        <select id="paciente-select" onchange="buscarDiagnostico()"
                             style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
                             <option value="">Carregando pacientes...</option>
                         </select>
                     </div>
                     <div style="margin-bottom: 1.5rem;">
-                        <label
-                            style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Upload do Exame (MRI)</label>
-                        <input type="file" id="mri-file" accept="image/png, image/jpeg, image/jpg, .dicom"
+                        <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Upload do Exame (MRI)</label>
+                        <input type="file" id="mri-file" accept="image/png, image/jpeg, image/jpg"
                             style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 0.5rem; color: white;">
                     </div>
                     <button onclick="analisarIA()" id="btn-analisar" class="btn btn-primary"
                         style="width: 100%; padding: 1rem;">Iniciar Análise Neural</button>
                 </div>
 
-                <div class="card">
-                    <h3 style="margin-bottom: 1.5rem;">Console de Processamento</h3>
+                <!-- Coluna direita: console / resultado -->
+                <div class="card ia-right-card">
+                    <h3>Console de Processamento</h3>
+
+                    <!-- Log (visível durante processamento) -->
                     <div id="log" class="log-container">
                         > Sistema pronto. Aguardando entrada...
                     </div>
-                    <div id="result-ia" class="ai-result">
-                        <div style="color: var(--primary); font-weight: 700; margin-bottom: 0.5rem;">RESULTADO DA
-                            ANÁLISE IA:</div>
-                        <div id="result-text" style="line-height: 1.6;"></div>
+
+                    <!-- Resultado (visível após análise) -->
+                    <div id="result-ia" class="ai-result" style="display:none;">
+                        <div style="color: var(--primary); font-weight: 700; margin-bottom: 0.5rem; font-size: 0.8rem; letter-spacing: 0.05em;">RESULTADO DA ANÁLISE IA</div>
+                        <div id="result-text" style="line-height: 1.6; font-size: 0.875rem;"></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Histórico de diagnósticos do paciente selecionado -->
+            <div class="card historico-card" id="historico-section" style="display:none;">
+                <h3 style="margin-bottom: 1.5rem;">Histórico de Laudos do Paciente</h3>
+                <div id="historico-list"></div>
             </div>
         </main>
     </div>
 
-    <script src="js/auth.js?v=2"></script>
-    <script src="js/createPermissionChecker.js?v=2"></script>
-    <script src="js/dashboard.js?v=2"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/createPermissionChecker.js?v=3"></script>
+    <script src="js/dashboard.js?v=3"></script>
     <script>
+        // Base URL para imagens servidas pelo backend
+        const IMG_BASE = `${API_URL}/imagens`;
+
+        // =====================
+        // Carrega pacientes no select
+        // =====================
         async function loadPacientes() {
             try {
                 const res = await fetch(`${API_URL}/pacientes`, {
@@ -122,43 +212,144 @@
                 const data = await res.json();
                 const select = document.getElementById('paciente-select');
                 select.innerHTML = '<option value="">Selecione um paciente</option>' +
-                    data.dados.map(p => `<option value="${p.id}">${p.nome} (${p.cpf})</option>`).join('');
+                    (data.dados || []).map(p => `<option value="${p.id}">${p.nome} (${p.cpf})</option>`).join('');
             } catch (e) {
-                console.error(e);
+                console.error('Erro ao carregar pacientes', e);
             }
         }
 
+        // =====================
+        // Busca laudos existentes quando seleciona um paciente
+        // =====================
+        async function buscarDiagnostico() {
+            const pacienteId = document.getElementById('paciente-select').value;
+            const section = document.getElementById('historico-section');
+
+            if (!pacienteId) {
+                section.style.display = 'none';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/pacientes/${pacienteId}/ia`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const data = await res.json();
+                const laudos = data.dados || [];
+
+                if (laudos.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                renderHistorico(laudos);
+            } catch (e) {
+                console.error('Erro ao buscar diagnósticos', e);
+            }
+        }
+
+        // =====================
+        // Renderiza histórico de laudos
+        // =====================
+        function renderHistorico(laudos) {
+            const container = document.getElementById('historico-list');
+            container.innerHTML = '';
+
+            laudos.forEach(laudo => {
+                // Trata imagens: pode vir como string JSON ou como array
+                let imagens = laudo.imagem || laudo.imagens || [];
+                if (typeof imagens === 'string') {
+                    try { imagens = JSON.parse(imagens); } catch(e) { imagens = []; }
+                }
+                if (!Array.isArray(imagens)) imagens = [];
+
+                // Monta HTML das imagens usando /api/imagens/ como base
+                const imagensHtml = imagens.length > 0
+                    ? `<div class="imagens-grid">` +
+                        imagens.map(img => {
+                            // Remove qualquer barra escapada \/ e garante caminho limpo
+                            const clean = img.replace(/\\\//g, '/').replace(/^imagens\//, '');
+                            const src = `${IMG_BASE}/${clean}`;
+                            return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
+                        }).join('') +
+                      `</div>`
+                    : '';
+
+                const div = document.createElement('div');
+                div.className = 'laudo-item';
+                div.innerHTML = `
+                    <div class="laudo-item-header">
+                        <span class="laudo-item-date">📅 ${laudo.data_diagnostico || 'Data não informada'}</span>
+                        <button class="btn-excluir" onclick="excluirDiagnostico(${laudo.id}, this)">🗑 Excluir</button>
+                    </div>
+                    <div class="laudo-text">${laudo.diagnostico || 'Sem laudo'}</div>
+                    ${imagensHtml}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // =====================
+        // Exclui um diagnóstico
+        // =====================
+        async function excluirDiagnostico(id, btn) {
+            if (!confirm('Deseja realmente excluir este diagnóstico?')) return;
+
+            try {
+                btn.disabled = true;
+                await fetch(`${API_URL}/ia/${id}`, {
+                    method: 'DELETE',
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                // Recarrega o histórico do paciente
+                await buscarDiagnostico();
+            } catch (e) {
+                console.error('Erro ao excluir diagnóstico', e);
+                btn.disabled = false;
+            }
+        }
+
+        // =====================
+        // Adiciona linha no console de log
+        // =====================
         function addLog(msg) {
             const log = document.getElementById('log');
             log.innerHTML += `<div>> ${msg}</div>`;
             log.scrollTop = log.scrollHeight;
         }
 
+        // =====================
+        // Gera novo diagnóstico via IA
+        // =====================
         async function analisarIA() {
             const paciente = document.getElementById('paciente-select').value;
             const fileInput = document.getElementById('mri-file');
             const file = fileInput.files[0];
 
             if (!paciente || !file) {
-                alert("Selecione um paciente e anexe um arquivo de Ressonância Magnética.");
+                alert('Selecione um paciente e anexe um arquivo de Ressonância Magnética.');
                 return;
             }
 
             const btn = document.getElementById('btn-analisar');
             btn.disabled = true;
-            btn.innerText = "Processando...";
+            btn.innerText = 'Processando...';
 
-            document.getElementById('result-ia').style.display = 'none';
-            document.getElementById('log').style.display = 'block';
-            document.getElementById('log').innerHTML = '> Sistema pronto. Aguardando entrada...';
-            addLog("Enviando arquivo do exame para o Serviço de IA Seguro...");
+            // Exibe console, esconde laudo anterior
+            const logEl = document.getElementById('log');
+            const resultEl = document.getElementById('result-ia');
+            resultEl.style.display = 'none';
+            logEl.style.display = 'block';
+            logEl.innerHTML = '> Sistema pronto. Aguardando entrada...';
+            addLog('Enviando arquivo do exame para o Serviço de IA Seguro...');
 
             const steps = [
-                "Processando camadas da imagem MRI...",
-                "Buscando padrões geométricos suspeitos...",
-                "Verificando marcadores de desmielinização periventricular...",
-                "Calculando percentual de probabilidade neural...",
-                "Gerando laudo descritivo estruturado..."
+                'Processando camadas da imagem MRI...',
+                'Buscando padrões geométricos suspeitos...',
+                'Verificando marcadores de desmielinização periventricular...',
+                'Calculando percentual de probabilidade neural...',
+                'Gerando laudo descritivo estruturado...'
             ];
 
             for (const step of steps) {
@@ -169,50 +360,62 @@
             try {
                 const formData = new FormData();
                 formData.append('paciente_id', paciente);
-                formData.append('imagem', file);
+                // O backend espera $_FILES['imagens'] (no plural)
+                formData.append('imagens', file);
 
                 const res = await fetch(`${API_URL}/ia/analisar`, {
                     method: 'POST',
-                    headers: {
-                        "Authorization": "Bearer " + token
-                    },
+                    headers: { "Authorization": "Bearer " + token },
                     body: formData
                 });
+
                 const result = await res.json();
+
+                if (!res.ok || !result.status) {
+                    addLog('Erro: ' + (result.dados?.msg || 'Falha ao processar no servidor.'));
+                    btn.disabled = false;
+                    btn.innerText = 'Iniciar Análise Neural';
+                    return;
+                }
+
                 const diagnostico = result.dados;
 
-                const resultText = document.getElementById('result-text');
-                
-                let imagensHtml = '';
-                let imagens = diagnostico.imagens;
+                // Trata imagens retornadas diretamente pela API de análise
+                let imagens = diagnostico.imagens || [];
                 if (typeof imagens === 'string') {
                     try { imagens = JSON.parse(imagens); } catch(e) { imagens = []; }
                 }
 
-                if (imagens && imagens.length > 0) {
-                    imagensHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 1rem;">' + 
+                const imagensHtml = imagens.length > 0
+                    ? `<div class="imagens-grid">` +
                         imagens.map(img => {
-                            let cleanImg = img.replace(/\\\//g, '/'); // fallback para remover escapes de JSON caso venham sozinhos
-                            return `<a href="../${cleanImg}" target="_blank"><img src="../${cleanImg}" alt="MRI" style="width: 100%; border-radius: 0.5rem; object-fit: cover; aspect-ratio: 1; cursor: pointer;"></a>`;
-                        }).join('') + 
-                        '</div>';
-                }
+                            const clean = img.replace(/\\\//g, '/').replace(/^imagens\//, '');
+                            const src = `${IMG_BASE}/${clean}`;
+                            return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
+                        }).join('') +
+                      `</div>`
+                    : '';
 
-                resultText.innerHTML = `
-                    <div style="font-size: 0.95rem;">${diagnostico.diagnostico}</div>
+                document.getElementById('result-text').innerHTML = `
+                    <div>${diagnostico.diagnostico || ''}</div>
                     ${imagensHtml}
                 `;
 
-                document.getElementById('log').style.display = 'none';
-                document.getElementById('result-ia').style.display = 'block';
-                addLog("Análise concluída e registrada no banco de dados.");
+                // Troca console pelo resultado
+                logEl.style.display = 'none';
+                resultEl.style.display = 'block';
+                addLog('Análise concluída e registrada no banco de dados.');
+
+                // Atualiza o histórico automaticamente
+                await buscarDiagnostico();
+
             } catch (e) {
-                addLog("Erro ao processar análise no servidor.");
+                addLog('Erro ao processar análise no servidor.');
                 console.error(e);
             }
 
             btn.disabled = false;
-            btn.innerText = "Iniciar Análise Neural";
+            btn.innerText = 'Iniciar Análise Neural';
         }
 
         loadPacientes();
