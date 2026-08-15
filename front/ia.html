@@ -110,9 +110,9 @@
         </main>
     </div>
 
-    <script src="js/auth.js"></script>
-    <script src="js/createPermissionChecker.js"></script>
-    <script src="js/dashboard.js"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/createPermissionChecker.js?v=2"></script>
+    <script src="js/dashboard.js?v=2"></script>
     <script>
         async function loadPacientes() {
             try {
@@ -149,6 +149,8 @@
             btn.innerText = "Processando...";
 
             document.getElementById('result-ia').style.display = 'none';
+            document.getElementById('log').style.display = 'block';
+            document.getElementById('log').innerHTML = '> Sistema pronto. Aguardando entrada...';
             addLog("Enviando arquivo do exame para o Serviço de IA Seguro...");
 
             const steps = [
@@ -182,9 +184,17 @@
                 const resultText = document.getElementById('result-text');
                 
                 let imagensHtml = '';
-                if (diagnostico.imagens && diagnostico.imagens.length > 0) {
+                let imagens = diagnostico.imagens;
+                if (typeof imagens === 'string') {
+                    try { imagens = JSON.parse(imagens); } catch(e) { imagens = []; }
+                }
+
+                if (imagens && imagens.length > 0) {
                     imagensHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 1rem;">' + 
-                        diagnostico.imagens.map(img => `<a href="../${img}" target="_blank"><img src="../${img}" alt="MRI" style="width: 100%; border-radius: 0.5rem; object-fit: cover; aspect-ratio: 1; cursor: pointer;"></a>`).join('') + 
+                        imagens.map(img => {
+                            let cleanImg = img.replace(/\\\//g, '/'); // fallback para remover escapes de JSON caso venham sozinhos
+                            return `<a href="../${cleanImg}" target="_blank"><img src="../${cleanImg}" alt="MRI" style="width: 100%; border-radius: 0.5rem; object-fit: cover; aspect-ratio: 1; cursor: pointer;"></a>`;
+                        }).join('') + 
                         '</div>';
                 }
 
@@ -193,6 +203,7 @@
                     ${imagensHtml}
                 `;
 
+                document.getElementById('log').style.display = 'none';
                 document.getElementById('result-ia').style.display = 'block';
                 addLog("Análise concluída e registrada no banco de dados.");
             } catch (e) {
