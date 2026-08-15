@@ -139,7 +139,6 @@
 
             const method = pacienteId ? 'PUT' : 'POST';
             const url = pacienteId ? `${API_URL}/pacientes/${pacienteId}` : `${API_URL}/pacientes`;
-            console.log(data);
             try {
                 const res = await fetch(url, {
                     method: method,

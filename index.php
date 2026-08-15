@@ -90,7 +90,18 @@ $router = new Router();
 $router->get("/api/planos", "PlanoController@list");
 $router->post("/api/licencas", "LicencaController@store");
 
-
+// Rota para servir imagens de exames geradas pela IA
+$router->get("/api/imagens/(.*)", function ($path) {
+    $file = __DIR__ . "/imagens/" . $path;
+    if (file_exists($file)) {
+        $mime = mime_content_type($file);
+        header("Content-Type: $mime");
+        readfile($file);
+        exit;
+    }
+    http_response_code(404);
+    echo json_encode(["erro" => "Arquivo não encontrado"]);
+});
 
 /*
 |--------------------------------------------------------------------------
