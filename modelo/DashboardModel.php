@@ -59,6 +59,15 @@ class DashboardModel extends BaseModel {
         }
         $stats['roles_stats'] = $roles_stats;
 
+        // Get gender statistics
+        $sql = "SELECT sexo, COUNT(*) as total FROM pacientes WHERE instituicao_id = ? AND deleted_at IS NULL GROUP BY sexo";
+        $result = $this->query($sql, [$instituicaoId], "i");
+        $gender_stats = [];
+        while ($row = $result->fetch_assoc()) {
+            $gender_stats[] = $row;
+        }
+        $stats['gender_stats'] = $gender_stats;
+
         return $stats;
     }
 

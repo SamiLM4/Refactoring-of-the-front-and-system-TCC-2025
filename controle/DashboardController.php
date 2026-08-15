@@ -16,6 +16,7 @@ class DashboardController extends BaseController {
     public function getStats() {
         $usuario = $GLOBALS['usuario'];
         $stats = $this->model->getStats($usuario['instituicao_id']);
+        $stats['ia_api'] = 'OpenAI GPT-4o';
         $this->jsonResponse($stats);
     }
 

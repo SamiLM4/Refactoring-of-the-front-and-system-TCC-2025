@@ -202,9 +202,67 @@ async function loadStats() {
             initCarousel();
         }
 
+        const apiInfo = document.getElementById('api-info');
+        if (apiInfo) {
+            apiInfo.innerHTML = `IA Generativa em Uso: <strong>${stats.ia_api || 'Desconhecida'}</strong> &nbsp;|&nbsp; Diagnósticos Feitos: <strong>${stats.ia_diagnosticos || 0}</strong> &nbsp;|&nbsp; Requisições Restantes: <strong>Ilimitado</strong> (no backend atual)`;
+        }
+
+        if (document.getElementById('genderChart') && stats.gender_stats) {
+            initGenderChart(stats.gender_stats);
+        }
+
     } catch (error) {
         console.error("Erro ao carregar estatísticas", error);
     }
+}
+
+function initGenderChart(genderStats) {
+    const mainEl = document.getElementById('genderChart');
+    if (!mainEl) return;
+
+    const existingChart = Chart.getChart(mainEl);
+    if (existingChart) existingChart.destroy();
+
+    const labels = [];
+    const data = [];
+    const colors = [];
+
+    genderStats.forEach(s => {
+        let label = s.sexo;
+        if (s.sexo === 'M') { label = 'Masculino'; colors.push('#3b82f6'); }
+        else if (s.sexo === 'F') { label = 'Feminino'; colors.push('#ec4899'); }
+        else { label = 'Outro'; colors.push('#8b5cf6'); }
+
+        labels.push(label);
+        data.push(s.total);
+    });
+
+    if (labels.length === 0) {
+        labels.push('Nenhum dado');
+        data.push(1);
+        colors.push('#334155');
+    }
+
+    new Chart(mainEl, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8' }
+                }
+            }
+        }
+    });
 }
 
 function initCarousel() {
