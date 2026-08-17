@@ -198,9 +198,6 @@
     <script src="js/createPermissionChecker.js?v=3"></script>
     <script src="js/dashboard.js?v=3"></script>
     <script>
-        // Base URL para imagens servidas pelo backend
-        const IMG_BASE = `${API_URL}/imagens`;
-
         // =====================
         // Carrega pacientes no select
         // =====================
@@ -264,14 +261,19 @@
                 }
                 if (!Array.isArray(imagens)) imagens = [];
 
-                // Monta HTML das imagens usando /api/imagens/ como base
+                // Monta HTML das imagens usando data URI (base64 armazenado no banco)
                 const imagensHtml = imagens.length > 0
                     ? `<div class="imagens-grid">` +
                         imagens.map(img => {
-                            // Remove qualquer barra escapada \/ e garante caminho limpo
-                            const clean = img.replace(/\\\//g, '/').replace(/^imagens\//, '');
-                            const src = `${IMG_BASE}/${clean}`;
-                            return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
+                            // Suporta tanto o formato novo {mime, data} quanto caminhos legados (string)
+                            if (typeof img === 'object' && img.data) {
+                                const src = `data:${img.mime};base64,${img.data}`;
+                                return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
+                            }
+                            // Fallback para registros antigos com caminho de arquivo
+                            return `<a href="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" target="_blank">
+                                        <img src="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" alt="MRI" loading="lazy">
+                                    </a>`;
                         }).join('') +
                       `</div>`
                     : '';
@@ -389,9 +391,15 @@
                 const imagensHtml = imagens.length > 0
                     ? `<div class="imagens-grid">` +
                         imagens.map(img => {
-                            const clean = img.replace(/\\\//g, '/').replace(/^imagens\//, '');
-                            const src = `${IMG_BASE}/${clean}`;
-                            return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
+                            // Suporta tanto o formato novo {mime, data} quanto caminhos legados (string)
+                            if (typeof img === 'object' && img.data) {
+                                const src = `data:${img.mime};base64,${img.data}`;
+                                return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
+                            }
+                            // Fallback para registros antigos com caminho de arquivo
+                            return `<a href="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" target="_blank">
+                                        <img src="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" alt="MRI" loading="lazy">
+                                    </a>`;
                         }).join('') +
                       `</div>`
                     : '';

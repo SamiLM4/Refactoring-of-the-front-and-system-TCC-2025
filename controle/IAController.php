@@ -44,22 +44,16 @@ class IAController extends BaseController
             $this->errorResponse("Envie no máximo " . self::MAX_IMAGENS . " imagens por requisição.");
         }
 
-        $apiKey = getenv('OPENAI_API_KEY');
+        $apiKey  = getenv('OPENAI_API_KEY');
         $devMode = filter_var(getenv('IA_DEV_MODE'), FILTER_VALIDATE_BOOLEAN);
 
         if (!$devMode && !$apiKey) {
             $this->errorResponse("OPENAI_API_KEY não configurada no ambiente.", 500);
         }
 
-        // Criar diretório se não existir
-        $uploadDir = __DIR__ . '/../imagens/exames_mri/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        // Salva cada imagem em disco, redimensionando as grandes, e monta o payload da OpenAI
-        $caminhosRelativos = [];
-        $caminhosAbsolutos = []; // pra poder limpar em caso de erro
+        // Processa cada imagem: redimensiona se necessário e converte para base64
+        // As imagens são armazenadas diretamente no banco como base64 (sem salvar em disco)
+        $imagensBase64 = []; // array de {mime, data} para salvar no banco
         $content = [["type" => "text", "text" => ""]];
 
         foreach ($imagensTmp as $i => $tmp) {
@@ -72,21 +66,17 @@ class IAController extends BaseController
                 continue; // ignora arquivos que não são imagem suportada
             }
 
-            $fileName = uniqid() . '_' . basename($imagensNomes[$i] ?? 'exame.jpg');
-            $filePath = $uploadDir . $fileName;
-
-            $preparo = $this->prepararEsalvarImagem($tmp, $mimeOriginal, $filePath);
+            $preparo = $this->prepararImagem($tmp, $mimeOriginal);
             if ($preparo === null) {
                 continue;
             }
 
             [$base64, $mime] = $preparo;
-            $caminhosRelativos[] = 'imagens/exames_mri/' . $fileName;
-            $caminhosAbsolutos[] = $filePath;
+            $imagensBase64[] = ['mime' => $mime, 'data' => $base64];
             $content[] = ["type" => "image_url", "image_url" => ["url" => "data:$mime;base64,$base64"]];
         }
 
-        if (empty($caminhosRelativos)) {
+        if (empty($imagensBase64)) {
             $this->errorResponse("Nenhuma imagem válida (PNG/JPEG/WEBP) foi enviada.");
         }
 
@@ -94,34 +84,31 @@ class IAController extends BaseController
         if ($devMode) {
             $diagnosticoGerado = "### Resumo técnico\n- [DEV_MODE] Laudo simulado, nenhuma chamada à OpenAI foi feita.";
         } else {
-            $diagnosticoGerado = $this->chamarOpenAI($apiKey, $content, $caminhosAbsolutos);
+            $diagnosticoGerado = $this->chamarOpenAI($apiKey, $content);
         }
 
         $laudoFormatado = $this->formatarDiagnostico($diagnosticoGerado);
 
         $resultId = $this->model->create([
             "instituicao_id" => $usuario['instituicao_id'],
-            "paciente_id" => $paciente['id'],
-            "nome" => $paciente['nome'],
-            "cpf" => $paciente['cpf'],
-            "imagem" => json_encode($caminhosRelativos),
-            "diagnostico" => $laudoFormatado,
+            "paciente_id"    => $paciente['id'],
+            "nome"           => $paciente['nome'],
+            "cpf"            => $paciente['cpf'],
+            "imagem"         => json_encode($imagensBase64),
+            "diagnostico"    => $laudoFormatado,
             "data_diagnostico" => date('Y-m-d'),
         ]);
 
         if (!$resultId) {
-            foreach ($caminhosAbsolutos as $abs) {
-                @unlink($abs);
-            }
             $this->errorResponse("Erro ao salvar no banco.", 500);
         }
 
         $this->registrarAuditoria('Gerou diagnóstico de IA', "Paciente ID: {$paciente['id']}", $paciente['id']);
 
         $this->jsonResponse([
-            "id" => $resultId,
+            "id"         => $resultId,
             "diagnostico" => $laudoFormatado,
-            "imagens" => $caminhosRelativos,
+            "imagens"    => $imagensBase64,
         ], true, 201);
     }
 
@@ -150,53 +137,51 @@ class IAController extends BaseController
     // ==== HELPERS PRIVADOS ====
 
     /**
-     * Redimensiona (se necessário), salva em disco e retorna [base64, mime] pra enviar à OpenAI.
-     * Evita reler o arquivo depois: a mesma versão redimensionada é a que fica salva.
+     * Redimensiona (se necessário) e retorna [base64, mime] para enviar à OpenAI e salvar no banco.
+     * Não salva nenhum arquivo em disco.
      */
-    private function prepararEsalvarImagem(string $caminhoTmp, string $mimeOriginal, string $destino): ?array
+    private function prepararImagem(string $caminhoTmp, string $mimeOriginal): ?array
     {
         [$largura, $altura] = getimagesize($caminhoTmp);
         $ladoMaior = max($largura, $altura);
 
+        // Imagem já está dentro do limite — converte direto para base64
         if ($ladoMaior <= self::MAX_LADO_PX) {
-            if (!move_uploaded_file($caminhoTmp, $destino)) {
-                return null;
-            }
-            return [base64_encode(file_get_contents($destino)), $mimeOriginal];
+            return [base64_encode(file_get_contents($caminhoTmp)), $mimeOriginal];
         }
 
+        // Precisa redimensionar
         $escala = self::MAX_LADO_PX / $ladoMaior;
         $novaLargura = (int) round($largura * $escala);
-        $novaAltura = (int) round($altura * $escala);
+        $novaAltura  = (int) round($altura * $escala);
 
         $origem = match ($mimeOriginal) {
             'image/jpeg' => imagecreatefromjpeg($caminhoTmp),
-            'image/png' => imagecreatefrompng($caminhoTmp),
+            'image/png'  => imagecreatefrompng($caminhoTmp),
             'image/webp' => imagecreatefromwebp($caminhoTmp),
-            default => null,
+            default      => null,
         };
 
+        // Se não conseguiu criar a imagem GD, retorna o original sem redimensionar
         if (!$origem) {
-            if (!move_uploaded_file($caminhoTmp, $destino)) {
-                return null;
-            }
-            return [base64_encode(file_get_contents($destino)), $mimeOriginal];
+            return [base64_encode(file_get_contents($caminhoTmp)), $mimeOriginal];
         }
 
         $destinoImg = imagecreatetruecolor($novaLargura, $novaAltura);
         imagecopyresampled($destinoImg, $origem, 0, 0, 0, 0, $novaLargura, $novaAltura, $largura, $altura);
 
-        // destino final sempre em .jpg quando foi redimensionado
-        $destinoJpg = preg_replace('/\.\w+$/', '.jpg', $destino);
-        imagejpeg($destinoImg, $destinoJpg, 85);
+        // Captura o JPEG redimensionado direto para memória (sem passar por disco)
+        ob_start();
+        imagejpeg($destinoImg, null, 85);
+        $imagemBytes = ob_get_clean();
 
         imagedestroy($origem);
         imagedestroy($destinoImg);
 
-        return [base64_encode(file_get_contents($destinoJpg)), 'image/jpeg'];
+        return [base64_encode($imagemBytes), 'image/jpeg'];
     }
 
-    private function chamarOpenAI(string $apiKey, array $content, array $caminhosParaLimpar): string
+    private function chamarOpenAI(string $apiKey, array $content): string
     {
         $data = [
             "model" => "gpt-4o",
@@ -209,42 +194,33 @@ class IAController extends BaseController
 
         $ch = curl_init("https://api.openai.com/v1/chat/completions");
         curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
+            CURLOPT_POST            => true,
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_HTTPHEADER      => [
                 "Content-Type: application/json",
                 "Authorization: Bearer $apiKey",
             ],
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_TIMEOUT => 60,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_POSTFIELDS      => json_encode($data),
+            CURLOPT_TIMEOUT         => 60,
+            CURLOPT_CONNECTTIMEOUT  => 10,
         ]);
 
         $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlErro = curl_error($ch);
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErro  = curl_error($ch);
         curl_close($ch);
 
         if ($response === false || $curlErro) {
-            foreach ($caminhosParaLimpar as $abs) {
-                @unlink($abs);
-            }
             $this->errorResponse("Erro ao se conectar à API da OpenAI: $curlErro", 502);
         }
 
         if ($httpCode !== 200) {
-            foreach ($caminhosParaLimpar as $abs) {
-                @unlink($abs);
-            }
             $this->errorResponse("OpenAI retornou HTTP $httpCode.", 502);
         }
 
         $resposta = json_decode($response, true);
 
         if (!isset($resposta['choices'][0]['message']['content'])) {
-            foreach ($caminhosParaLimpar as $abs) {
-                @unlink($abs);
-            }
             $this->errorResponse("A resposta da OpenAI não tem o conteúdo esperado.", 500);
         }
 
