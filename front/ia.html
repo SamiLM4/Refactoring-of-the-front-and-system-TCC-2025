@@ -242,7 +242,7 @@
                         <label
                             style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Upload
                             do Exame (MRI)</label>
-                        <input type="file" id="mri-file" accept="image/png, image/jpeg, image/jpg"
+                        <input type="file" id="mri-file" multiple accept="image/png, image/jpeg, image/jpg"
                             style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 0.5rem; color: white;">
                     </div>
                     <button onclick="analisarIA()" id="btn-analisar" class="btn btn-primary"
@@ -450,10 +450,10 @@
         async function analisarIA() {
             const paciente = document.getElementById('paciente-select').value;
             const fileInput = document.getElementById('mri-file');
-            const file = fileInput.files[0];
+            const files = fileInput.files;
 
-            if (!paciente || !file) {
-                alert('Selecione um paciente e anexe um arquivo de Ressonância Magnética.');
+            if (!paciente || files.length === 0) {
+                alert('Selecione um paciente e anexe pelo menos uma imagem de Ressonância Magnética.');
                 return;
             }
 
@@ -488,7 +488,7 @@
                 const formData = new FormData();
                 formData.append('paciente_id', paciente);
                 // O backend espera $_FILES['imagens'] (no plural)
-                formData.append('imagens', file);
+                formData.append('imagens', files);
 
                 const res = await fetch(`${API_URL}/ia/analisar`, {
                     method: 'POST',
