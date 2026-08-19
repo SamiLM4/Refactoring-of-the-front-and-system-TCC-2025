@@ -113,7 +113,6 @@
         .laudo-text {
             font-size: 0.875rem;
             line-height: 1.6;
-            max-height: 200px;
             overflow-y: auto;
             color: var(--text-muted);
         }
@@ -353,8 +352,9 @@
             // Exibe console, esconde laudo anterior
             const logEl = document.getElementById('log');
             const resultEl = document.getElementById('result-ia');
+            const resultTextEl = document.getElementById('result-text');
             resultEl.style.display = 'none';
-            resultText.innerHTML = '';
+            resultTextEl.innerHTML = '';
             logEl.style.display = 'block';
             logEl.innerHTML = '> Sistema pronto. Aguardando entrada...';
             addLog('Enviando arquivo do exame para o Serviço de IA Seguro...');
