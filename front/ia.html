@@ -15,12 +15,13 @@
             align-items: start;
         }
 
+        /* ===================== */
+        /* Console de Processamento (somente log, altura fixa + scroll) */
+        /* ===================== */
         .ia-right-card {
-            max-height: 500px;
+            height: 420px;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
-            /* scroll no card inteiro, sem vazar */
         }
 
         .ia-right-card h3 {
@@ -32,25 +33,39 @@
             background: rgba(0, 0, 0, 0.3);
             padding: 1rem;
             border-radius: 0.5rem;
-            flex-shrink: 0;
+            flex: 1;
+            overflow-y: auto;
             font-family: monospace;
             font-size: 0.875rem;
             color: #10b981;
             box-sizing: border-box;
         }
 
-        .ai-result {
+        /* ===================== */
+        /* Card de Resultado Atual (aparece após a análise, sem scroll) */
+        /* ===================== */
+        .resultado-atual-card {
+            margin-top: 2rem;
             border-left: 4px solid var(--primary);
-            padding: 1rem;
-            background: var(--glass-bg);
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-            flex-shrink: 0;
-            box-sizing: border-box;
             animation: fadeIn 0.4s ease-out;
         }
 
-        /* Histórico de laudos */
+        .resultado-atual-label {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        #resultado-atual-text {
+            line-height: 1.6;
+            font-size: 0.875rem;
+        }
+
+        /* ===================== */
+        /* Histórico de laudos (colapsável) */
+        /* ===================== */
         .historico-card {
             margin-top: 2rem;
         }
@@ -59,20 +74,60 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
             border-radius: 0.5rem;
-            padding: 1rem;
             margin-bottom: 1rem;
+            overflow: hidden;
         }
 
         .laudo-item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .laudo-item-header:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .laudo-item-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .laudo-toggle-icon {
+            display: inline-block;
+            transition: transform 0.25s ease;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .laudo-item.expanded .laudo-toggle-icon {
+            transform: rotate(180deg);
         }
 
         .laudo-item-date {
             font-size: 0.8rem;
             color: var(--text-muted);
+        }
+
+        .laudo-item-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .laudo-item-body {
+            display: none;
+            padding: 0 1rem 1rem 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .laudo-item.expanded .laudo-item-body {
+            display: block;
+            padding-top: 1rem;
         }
 
         .btn-excluir {
@@ -114,22 +169,21 @@
         .laudo-text {
             font-size: 0.875rem;
             line-height: 1.6;
-            overflow-y: auto;
             color: var(--text-muted);
         }
 
-        .ai-result ul,
+        .resultado-atual-card ul,
         .laudo-text ul {
             padding-left: 1.25rem;
             margin: 0.5rem 0;
         }
 
-        .ai-result li,
+        .resultado-atual-card li,
         .laudo-text li {
             margin-bottom: 0.5rem;
         }
 
-        .ai-result p,
+        .resultado-atual-card p,
         .laudo-text p {
             margin-bottom: 0.75rem;
         }
@@ -195,26 +249,22 @@
                         style="width: 100%; padding: 1rem;">Iniciar Análise Neural</button>
                 </div>
 
-                <!-- Coluna direita: console / resultado -->
+                <!-- Coluna direita: console de processamento (SOMENTE log) -->
                 <div class="card ia-right-card">
                     <h3>Console de Processamento</h3>
-
-                    <!-- Log (visível durante processamento) -->
                     <div id="log" class="log-container">
                         > Sistema pronto. Aguardando entrada...
-                    </div>
-
-                    <!-- Resultado (visível após análise) -->
-                    <div id="result-ia" class="ai-result" style="display:none;">
-                        <div
-                            style="color: var(--primary); font-weight: 700; margin-bottom: 0.5rem; font-size: 0.8rem; letter-spacing: 0.05em;">
-                            RESULTADO DA ANÁLISE IA</div>
-                        <div id="result-text" style="line-height: 1.6; font-size: 0.875rem;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Histórico de diagnósticos do paciente selecionado -->
+            <!-- Resultado da análise ATUAL (aparece após concluir, aberto por completo) -->
+            <div class="card resultado-atual-card" id="resultado-atual" style="display:none;">
+                <div class="resultado-atual-label">RESULTADO DA ANÁLISE ATUAL</div>
+                <div id="resultado-atual-text"></div>
+            </div>
+
+            <!-- Histórico de diagnósticos do paciente selecionado (itens colapsáveis) -->
             <div class="card historico-card" id="historico-section" style="display:none;">
                 <h3 style="margin-bottom: 1.5rem;">Histórico de Laudos do Paciente</h3>
                 <div id="historico-list"></div>
@@ -275,49 +325,68 @@
         }
 
         // =====================
-        // Renderiza histórico de laudos
+        // Monta o HTML de uma grade de imagens (base64 ou caminho legado)
+        // =====================
+        function montarImagensHtml(imagensRaw) {
+            let imagens = imagensRaw || [];
+            if (typeof imagens === 'string') {
+                try { imagens = JSON.parse(imagens); } catch (e) { imagens = []; }
+            }
+            if (!Array.isArray(imagens)) imagens = [];
+
+            if (imagens.length === 0) return '';
+
+            return `<div class="imagens-grid">` +
+                imagens.map(img => {
+                    if (typeof img === 'object' && img.data) {
+                        const src = `data:${img.mime};base64,${img.data}`;
+                        return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
+                    }
+                    return `<a href="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" target="_blank">
+                                <img src="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" alt="MRI" loading="lazy">
+                            </a>`;
+                }).join('') +
+                `</div>`;
+        }
+
+        // =====================
+        // Renderiza histórico de laudos (itens colapsáveis)
         // =====================
         function renderHistorico(laudos) {
             const container = document.getElementById('historico-list');
             container.innerHTML = '';
 
             laudos.forEach(laudo => {
-                // Trata imagens: pode vir como string JSON ou como array
-                let imagens = laudo.imagem || laudo.imagens || [];
-                if (typeof imagens === 'string') {
-                    try { imagens = JSON.parse(imagens); } catch (e) { imagens = []; }
-                }
-                if (!Array.isArray(imagens)) imagens = [];
-
-                // Monta HTML das imagens usando data URI (base64 armazenado no banco)
-                const imagensHtml = imagens.length > 0
-                    ? `<div class="imagens-grid">` +
-                    imagens.map(img => {
-                        // Suporta tanto o formato novo {mime, data} quanto caminhos legados (string)
-                        if (typeof img === 'object' && img.data) {
-                            const src = `data:${img.mime};base64,${img.data}`;
-                            return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
-                        }
-                        // Fallback para registros antigos com caminho de arquivo
-                        return `<a href="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" target="_blank">
-                                        <img src="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" alt="MRI" loading="lazy">
-                                    </a>`;
-                    }).join('') +
-                    `</div>`
-                    : '';
+                const imagens = laudo.imagem || laudo.imagens || [];
+                const imagensHtml = montarImagensHtml(imagens);
 
                 const div = document.createElement('div');
                 div.className = 'laudo-item';
                 div.innerHTML = `
-                    <div class="laudo-item-header">
-                        <span class="laudo-item-date">📅 ${laudo.data_diagnostico || 'Data não informada'}</span>
-                        <button class="btn-excluir" onclick="excluirDiagnostico(${laudo.id}, this)">🗑 Excluir</button>
+                    <div class="laudo-item-header" onclick="toggleLaudoItem(this)">
+                        <div class="laudo-item-header-left">
+                            <span class="laudo-toggle-icon">▼</span>
+                            <span class="laudo-item-date">📅 ${laudo.data_diagnostico || 'Data não informada'}</span>
+                        </div>
+                        <div class="laudo-item-header-right">
+                            <button class="btn-excluir" onclick="event.stopPropagation(); excluirDiagnostico(${laudo.id}, this)">🗑 Excluir</button>
+                        </div>
                     </div>
-                    <div class="laudo-text">${markdownParaHtml(laudo.diagnostico)}</div>
-                    ${imagensHtml}
+                    <div class="laudo-item-body">
+                        <div class="laudo-text">${markdownParaHtml(laudo.diagnostico)}</div>
+                        ${imagensHtml}
+                    </div>
                 `;
                 container.appendChild(div);
             });
+        }
+
+        // =====================
+        // Expande/colapsa um item do histórico
+        // =====================
+        function toggleLaudoItem(headerEl) {
+            const item = headerEl.closest('.laudo-item');
+            item.classList.toggle('expanded');
         }
 
         // =====================
@@ -393,11 +462,12 @@
             btn.innerText = 'Processando...';
 
             const logEl = document.getElementById('log');
-            const resultEl = document.getElementById('result-ia');
-            const resultTextEl = document.getElementById('result-text');
-            resultEl.style.display = 'none';
-            resultTextEl.innerHTML = '';
-            logEl.style.display = 'block';
+            const resultadoAtualEl = document.getElementById('resultado-atual');
+            const resultadoAtualTextEl = document.getElementById('resultado-atual-text');
+
+            // Reseta o console e esconde o resultado atual anterior
+            resultadoAtualEl.style.display = 'none';
+            resultadoAtualTextEl.innerHTML = '';
             logEl.innerHTML = '> Sistema pronto. Aguardando entrada...';
             addLog('Enviando arquivo do exame para o Serviço de IA Seguro...');
 
@@ -436,35 +506,16 @@
                 }
 
                 const diagnostico = result.dados;
+                const imagensHtml = montarImagensHtml(diagnostico.imagens);
 
-                // Trata imagens retornadas diretamente pela API de análise
-                let imagens = diagnostico.imagens || [];
-                if (typeof imagens === 'string') {
-                    try { imagens = JSON.parse(imagens); } catch (e) { imagens = []; }
-                }
+                addLog('Análise concluída e registrada no banco de dados.');
 
-                const imagensHtml = imagens.length > 0
-                    ? `<div class="imagens-grid">` +
-                    imagens.map(img => {
-                        // Suporta tanto o formato novo {mime, data} quanto caminhos legados (string)
-                        if (typeof img === 'object' && img.data) {
-                            const src = `data:${img.mime};base64,${img.data}`;
-                            return `<a href="${src}" target="_blank"><img src="${src}" alt="MRI" loading="lazy"></a>`;
-                        }
-                        // Fallback para registros antigos com caminho de arquivo
-                        return `<a href="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" target="_blank">
-                                        <img src="${API_URL}/imagens/${String(img).replace(/^\/?(imagens\/)?/, '')}" alt="MRI" loading="lazy">
-                                    </a>`;
-                    }).join('') +
-                    `</div>`
-                    : '';
-
-                resultTextEl.innerHTML = `
+                // Mostra o resultado atual em card próprio, aberto por completo
+                resultadoAtualTextEl.innerHTML = `
                     ${markdownParaHtml(diagnostico.diagnostico)}
                     ${imagensHtml}
                 `;
-
-                resultEl.style.display = 'block';
+                resultadoAtualEl.style.display = 'block';
 
                 // Atualiza o histórico automaticamente
                 await buscarDiagnostico();
