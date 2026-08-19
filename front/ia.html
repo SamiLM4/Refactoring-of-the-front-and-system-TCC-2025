@@ -117,6 +117,22 @@
             color: var(--text-muted);
         }
 
+        .ai-result ul,
+        .laudo-text ul {
+            padding-left: 1.25rem;
+            margin: 0.5rem 0;
+        }
+
+        .ai-result li,
+        .laudo-text li {
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-result p,
+        .laudo-text p {
+            margin-bottom: 0.75rem;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -296,7 +312,7 @@
                         <span class="laudo-item-date">📅 ${laudo.data_diagnostico || 'Data não informada'}</span>
                         <button class="btn-excluir" onclick="excluirDiagnostico(${laudo.id}, this)">🗑 Excluir</button>
                     </div>
-                    <div class="laudo-text">${laudo.diagnostico || 'Sem laudo'}</div>
+                    <div class="laudo-text">${markdownParaHtml(laudo.diagnostico)}</div>
                     ${imagensHtml}
                 `;
                 container.appendChild(div);
@@ -333,6 +349,32 @@
         }
 
         // =====================
+        // Converte markdown simples (*, **) em HTML legível
+        // =====================
+        function markdownParaHtml(texto) {
+            if (!texto) return '';
+            const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let html = '';
+            let dentroLista = false;
+
+            linhas.forEach(linha => {
+                const isItemLista = /^\*\s+/.test(linha);
+                let conteudo = linha.replace(/^\*\s+/, '');
+                conteudo = conteudo.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+                if (isItemLista) {
+                    if (!dentroLista) { html += '<ul>'; dentroLista = true; }
+                    html += `<li>${conteudo}</li>`;
+                } else {
+                    if (dentroLista) { html += '</ul>'; dentroLista = false; }
+                    html += `<p>${conteudo}</p>`;
+                }
+            });
+            if (dentroLista) html += '</ul>';
+            return html;
+        }
+
+        // =====================
         // Gera novo diagnóstico via IA
         // =====================
         async function analisarIA() {
@@ -353,6 +395,7 @@
             const logEl = document.getElementById('log');
             const resultEl = document.getElementById('result-ia');
             const resultTextEl = document.getElementById('result-text');
+            const cardTitle = document.querySelector('.ia-right-card h3');
             resultEl.style.display = 'none';
             resultTextEl.innerHTML = '';
             logEl.style.display = 'block';
@@ -417,14 +460,15 @@
                     `</div>`
                     : '';
 
-                document.getElementById('result-text').innerHTML = `
-                    <div>${diagnostico.diagnostico || ''}</div>
+                resultTextEl.innerHTML = `
+                    ${markdownParaHtml(diagnostico.diagnostico)}
                     ${imagensHtml}
                 `;
 
                 // Troca console pelo resultado
                 logEl.style.display = 'none';
                 resultEl.style.display = 'block';
+                cardTitle.style.display = 'none';
 
                 // Atualiza o histórico automaticamente
                 await buscarDiagnostico();
