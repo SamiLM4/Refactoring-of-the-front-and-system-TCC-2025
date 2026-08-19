@@ -487,8 +487,9 @@
             try {
                 const formData = new FormData();
                 formData.append('paciente_id', paciente);
-                // O backend espera $_FILES['imagens'] (no plural)
-                formData.append('imagens', files);
+                for (const file of files) {
+                    formData.append('imagens[]', file);
+                }
 
                 const res = await fetch(`${API_URL}/ia/analisar`, {
                     method: 'POST',
