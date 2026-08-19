@@ -16,9 +16,11 @@
         }
 
         .ia-right-card {
-            height: 420px;
+            max-height: 500px;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
+            /* scroll no card inteiro, sem vazar */
         }
 
         .ia-right-card h3 {
@@ -30,8 +32,7 @@
             background: rgba(0, 0, 0, 0.3);
             padding: 1rem;
             border-radius: 0.5rem;
-            flex: 1;
-            overflow-y: auto;
+            flex-shrink: 0;
             font-family: monospace;
             font-size: 0.875rem;
             color: #10b981;
@@ -43,8 +44,8 @@
             padding: 1rem;
             background: var(--glass-bg);
             border-radius: 0.5rem;
-            overflow: visible;
-            height: auto;
+            margin-top: 1rem;
+            flex-shrink: 0;
             box-sizing: border-box;
             animation: fadeIn 0.4s ease-out;
         }
@@ -391,11 +392,9 @@
             btn.disabled = true;
             btn.innerText = 'Processando...';
 
-            // Exibe console, esconde laudo anterior
             const logEl = document.getElementById('log');
             const resultEl = document.getElementById('result-ia');
             const resultTextEl = document.getElementById('result-text');
-            const cardTitle = document.querySelector('.ia-right-card h3');
             resultEl.style.display = 'none';
             resultTextEl.innerHTML = '';
             logEl.style.display = 'block';
@@ -465,10 +464,7 @@
                     ${imagensHtml}
                 `;
 
-                // Troca console pelo resultado
-                logEl.style.display = 'none';
                 resultEl.style.display = 'block';
-                cardTitle.style.display = 'none';
 
                 // Atualiza o histórico automaticamente
                 await buscarDiagnostico();
