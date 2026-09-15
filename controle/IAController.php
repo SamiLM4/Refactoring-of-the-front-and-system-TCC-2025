@@ -44,7 +44,7 @@ class IAController extends BaseController
             $this->errorResponse("Envie no máximo " . self::MAX_IMAGENS . " imagens por requisição.");
         }
 
-        $apiKey  = getenv('OPENAI_API_KEY');
+        $apiKey = getenv('OPENAI_API_KEY');
         $devMode = filter_var(getenv('IA_DEV_MODE'), FILTER_VALIDATE_BOOLEAN);
 
         if (!$devMode && !$apiKey) {
@@ -91,11 +91,11 @@ class IAController extends BaseController
 
         $resultId = $this->model->create([
             "instituicao_id" => $usuario['instituicao_id'],
-            "paciente_id"    => $paciente['id'],
-            "nome"           => $paciente['nome'],
-            "cpf"            => $paciente['cpf'],
-            "imagem"         => json_encode($imagensBase64),
-            "diagnostico"    => $laudoFormatado,
+            "paciente_id" => $paciente['id'],
+            "nome" => $paciente['nome'],
+            "cpf" => $paciente['cpf'],
+            "imagem" => json_encode($imagensBase64),
+            "diagnostico" => $laudoFormatado,
             "data_diagnostico" => date('Y-m-d'),
         ]);
 
@@ -106,9 +106,9 @@ class IAController extends BaseController
         $this->registrarAuditoria('Gerou diagnóstico de IA', "Paciente ID: {$paciente['id']}", $paciente['id']);
 
         $this->jsonResponse([
-            "id"         => $resultId,
+            "id" => $resultId,
             "diagnostico" => $laudoFormatado,
-            "imagens"    => $imagensBase64,
+            "imagens" => $imagensBase64,
         ], true, 201);
     }
 
@@ -153,13 +153,13 @@ class IAController extends BaseController
         // Precisa redimensionar
         $escala = self::MAX_LADO_PX / $ladoMaior;
         $novaLargura = (int) round($largura * $escala);
-        $novaAltura  = (int) round($altura * $escala);
+        $novaAltura = (int) round($altura * $escala);
 
         $origem = match ($mimeOriginal) {
             'image/jpeg' => imagecreatefromjpeg($caminhoTmp),
-            'image/png'  => imagecreatefrompng($caminhoTmp),
+            'image/png' => imagecreatefrompng($caminhoTmp),
             'image/webp' => imagecreatefromwebp($caminhoTmp),
-            default      => null,
+            default => null,
         };
 
         // Se não conseguiu criar a imagem GD, retorna o original sem redimensionar
@@ -184,7 +184,7 @@ class IAController extends BaseController
     private function chamarOpenAI(string $apiKey, array $content): string
     {
         $data = [
-            "model" => "gpt-4o",
+            "model" => "gpt-4.1-mini",
             "messages" => [
                 ["role" => "system", "content" => $this->promptSistema()],
                 ["role" => "user", "content" => $content],
@@ -194,20 +194,20 @@ class IAController extends BaseController
 
         $ch = curl_init("https://api.openai.com/v1/chat/completions");
         curl_setopt_array($ch, [
-            CURLOPT_POST            => true,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_HTTPHEADER      => [
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
                 "Content-Type: application/json",
                 "Authorization: Bearer $apiKey",
             ],
-            CURLOPT_POSTFIELDS      => json_encode($data),
-            CURLOPT_TIMEOUT         => 60,
-            CURLOPT_CONNECTTIMEOUT  => 10,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_CONNECTTIMEOUT => 10,
         ]);
 
         $response = curl_exec($ch);
-        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlErro  = curl_error($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErro = curl_error($ch);
         curl_close($ch);
 
         if ($response === false || $curlErro) {

@@ -1,7 +1,8 @@
 <?php
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-class Banco {
+class Banco
+{
     private $host = "127.0.0.1";
     private $usuario = "root";
     private $senha = "";
@@ -9,7 +10,8 @@ class Banco {
     private $porta = "3306";
     private $con = null;
 
-    public function conectar() {
+    public function conectar()
+    {
         $this->host = $_ENV['DB_HOST'] ?? "127.0.0.1";
         $this->usuario = $_ENV['DB_USER'] ?? "root";
         $this->senha = $_ENV['DB_PASS'] ?? "";
@@ -27,14 +29,16 @@ class Banco {
         }
     }
 
-    public function getConexao() {
+    public function getConexao()
+    {
         if ($this->con == null) {
             $this->conectar();
         }
         return $this->con;
     }
 
-    public function setConexao($conexao) {
+    public function setConexao($conexao)
+    {
         $this->con = $conexao;
         return $this->con;
     }
