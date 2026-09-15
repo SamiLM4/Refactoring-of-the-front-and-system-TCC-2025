@@ -122,8 +122,6 @@
         document.getElementById('papelSelect').addEventListener('change', (e) => {
             const roleId = e.target.value;
             const role = roles.find(r => r.id == roleId);
-            
-            console.log("Selecionou papel:", roleId, role ? role.nome : "não encontrado");
 
             const extraFields = document.getElementById('extraFields');
             const crmField = document.getElementById('crmField');
@@ -135,7 +133,6 @@
             
             if (role && role.nome) {
                 const roleName = role.nome.toUpperCase().trim();
-                console.log("Normalizado:", roleName);
 
                 if (roleName === 'MEDICO') {
                     extraFields.style.display = 'grid';
@@ -143,7 +140,6 @@
                 } else if (roleName === 'PACIENTE') {
                     extraFields.style.display = 'grid';
                     pacienteFields.style.display = 'grid';
-                    console.log("Exibindo campos de paciente");
                 }
             }
         });
@@ -163,7 +159,6 @@
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 const result = await res.json();
-                console.log("Dados carregados para edição:", result);
                 if (!result.status || !result.dados) {
                     console.error("Erro ao carregar dados:", result.msg);
                     return;
@@ -187,7 +182,6 @@
                 if (u.papel_id) {
                     const select = document.getElementById('papelSelect');
                     select.value = u.papel_id;
-                    console.log("Definindo papel_id:", u.papel_id, "Novo Valor:", select.value);
                     // Trigger role change logic
                     select.dispatchEvent(new Event('change'));
                 }
@@ -195,7 +189,6 @@
                 // Profile-specific fields (fill remaining even if name was already set)
                 if (u.paciente) {
                     const p = u.paciente;
-                    console.log("Populando dados de paciente:", p);
                     setFieldValue('sexo', p.sexo);
                     setFieldValue('telefone', p.telefone);
                     setFieldValue('endereco', p.endereco);
@@ -206,7 +199,6 @@
                 }
 
                 if (u.admin) {
-                     console.log("Populando dados de admin:", u.admin);
                      // Admin primarily uses name which is already handled above
                 }
 

@@ -41,7 +41,7 @@ require_once("modelo/Router.php");
 function proteger(array $permissoes, $handler, bool $exigirLicenca = false)
 {
     return function (...$params) use ($permissoes, $handler, $exigirLicenca) {
-        require_once __DIR__ . "/middleware/authMiddleware.php";
+        require_once __DIR__ . "/middleware/AuthMiddleware.php";
         $usuario = authMiddleware($permissoes, $exigirLicenca);
         $GLOBALS['usuario'] = $usuario;
 
@@ -174,8 +174,6 @@ $router->get("/api/permissoes", proteger(["permissao.listar"], "PapelController@
 
 $router->get("/api/papeis/permissoes/(\d+)", proteger(["permissao.listar"], "PapelController@getRolePermissions", true));
 $router->put("/api/papeis/permissoes/(\d+)", proteger(["permissao.listar"], "PapelController@updatePermissions", true));
-
-   // Procedural routes for papel/permissoes removed in favor of PapelController methods powyżej
 
 // Administradores
 $router->get("/api/admins", proteger(["admin.listar"], "AdminController@list", true));
