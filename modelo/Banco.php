@@ -16,13 +16,16 @@ class Banco {
         $this->banco = $_ENV['DB_NAME'] ?? "TCC25";
         $this->porta = $_ENV['DB_PORT'] ?? "3306";
 
-        $this->con = new mysqli($this->host, $this->usuario, $this->senha, $this->banco, $this->porta);
-
-        if ($this->con->connect_error) {
-            $arrayResposta['status'] = "erro";
-            $arrayResposta['cod'] = "1";
-            $arrayResposta['msg'] = "Erro ao estabelecer conexão: " . $this->con->connect_error;
-            echo json_encode($arrayResposta);
+        try {
+            $this->con = new mysqli($this->host, $this->usuario, $this->senha, $this->banco, $this->porta);
+        } catch (\mysqli_sql_exception $e) {
+            http_response_code(500);
+            header("Content-Type: application/json");
+            echo json_encode([
+                "status" => "erro",
+                "cod" => "1",
+                "msg" => "Erro ao estabelecer conexão: " . $e->getMessage(),
+            ]);
             die();
         }
     }
