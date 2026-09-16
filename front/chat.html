@@ -155,6 +155,7 @@
         let lastMsgId = 0;
         let currentChatUserId = null;
         let isPolling = false;
+        let lastRenderedIds = "";
 
         document.getElementById('msg-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') enviarMensagem();
@@ -198,15 +199,17 @@
                 });
             } catch (e) {
                 console.error("Erro ao carregar contatos", e);
+                showToast("Erro ao carregar contatos do chat.", "error");
             }
         }
 
         function selectChat(userId, email) {
             if (currentChatUserId === userId) return;
-            
+
             currentChatUserId = userId;
             lastMsgId = 0;
-            
+            lastRenderedIds = "";
+
             document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             const selectedItem = document.getElementById(`contact-${userId}`);
             if (selectedItem) selectedItem.classList.add('active');
@@ -222,7 +225,10 @@
         }
 
         async function loadMensagens(forceScroll = false) {
-            if (!currentChatUserId || isPolling) return;
+            if (!currentChatUserId) return;
+            // Um recarregamento forçado (após enviar mensagem ou trocar de conversa)
+            // não pode ser descartado só porque um poll de fundo está em andamento.
+            if (isPolling && !forceScroll) return;
             isPolling = true;
 
             try {
@@ -232,35 +238,40 @@
                 const result = await res.json();
                 const mensagens = result.dados || [];
                 const box = document.getElementById('chat-box');
+                const idsAtuais = mensagens.map(m => m.id).join(",");
 
-                // Só re-renderiza se houver mensagens novas ou se for a primeira carga
-                if (mensagens.length > 0 && (mensagens.length !== box.querySelectorAll('.message').length || forceScroll)) {
-                    box.innerHTML = "";
-                    
-                    if (mensagens.length === 0) {
-                        box.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:2rem; opacity:0.5;">Início da conversa. Envie uma mensagem!</div>`;
+                if (mensagens.length === 0) {
+                    if (box.innerHTML.includes("Abrindo conversa") || lastRenderedIds !== "") {
+                        box.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:2rem; opacity:0.5;">Fale com este profissional pela primeira vez!</div>`;
+                        lastRenderedIds = "";
                     }
+                    return;
+                }
+
+                // Só re-renderiza se o conjunto de mensagens mudou ou se for a primeira carga
+                if (idsAtuais !== lastRenderedIds || forceScroll) {
+                    box.innerHTML = "";
 
                     mensagens.forEach(m => {
                         const isMe = Number(m.usuario_id) !== Number(currentChatUserId);
                         const msg = document.createElement('div');
                         msg.className = `message ${isMe ? 'msg-sent' : 'msg-received'}`;
-                        
+
                         const time = new Date(m.data_envio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        
+
                         msg.innerHTML = `
                             <div style="font-size: 0.875rem;">${m.mensagem}</div>
                             <div style="font-size: 0.65rem; opacity: 0.5; text-align: right; margin-top: 4px;">${time}</div>
                         `;
                         box.appendChild(msg);
                     });
-                    
+
                     box.scrollTop = box.scrollHeight;
-                } else if (mensagens.length === 0 && box.innerHTML.includes("Abrindo conversa")) {
-                    box.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:2rem; opacity:0.5;">Fale com este profissional pela primeira vez!</div>`;
+                    lastRenderedIds = idsAtuais;
                 }
             } catch (e) {
                 console.error("Erro ao carregar mensagens", e);
+                showToast("Erro ao carregar mensagens do chat.", "error");
             } finally {
                 isPolling = false;
             }
@@ -289,12 +300,14 @@
 
                 if (res.ok) {
                     input.value = "";
-                    loadMensagens(true);
+                    await loadMensagens(true);
                 } else {
-                    alert("Erro ao enviar mensagem.");
+                    const erro = await res.json().catch(() => null);
+                    alert(erro?.dados?.msg || erro?.erro || "Erro ao enviar mensagem.");
                 }
             } catch (e) {
                 console.error(e);
+                showToast("Erro ao enviar mensagem.", "error");
             }
         }
 
