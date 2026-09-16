@@ -1,6 +1,6 @@
-create database TCC25;
-use TCC25;
-    
+CREATE DATABASE IF NOT EXISTS TCC25 CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE TCC25;
+
 CREATE TABLE instituicao (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -37,7 +37,6 @@ CREATE TABLE planos (
     atualizado_em TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
 
-
 CREATE TABLE licencas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     token VARCHAR(512) NOT NULL UNIQUE,
@@ -48,46 +47,19 @@ CREATE TABLE licencas (
     expira_em TIMESTAMP NULL,
     plano_id INT NOT NULL,
 
-	FOREIGN KEY (plano_id) REFERENCES planos(id),
+    FOREIGN KEY (plano_id) REFERENCES planos(id),
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
-);
-
-INSERT INTO planos
-(nome, descricao, limite_usuarios, limite_papeis, limite_ia, valor, duracao_dias)
-VALUES
-(
-'Básico',
-'Plano ideal para clínicas pequenas',
-5, 1, 50,
-199.90,
-30
-),
-(
-'Profissional',
-'Plano intermediário',
-15, 3, 300,
-499.90,
-30
-),
-(
-'Enterprise',
-'Ilimitado para grandes instituições',
-NULL, NULL, NULL,
-1299.90,
-30
 );
 
 CREATE TABLE papeis (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) UNIQUE NOT NULL,
+    nome VARCHAR(50) NOT NULL,
     descricao TEXT,
     instituicao_id INT NOT NULL,
     is_delete TINYINT(1) NOT NULL DEFAULT 0,
-    
-    FOREIGN KEY (instituicao_id)
-	REFERENCES instituicao(id)
-	ON DELETE CASCADE
 
+    UNIQUE (nome, instituicao_id),
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
 );
 
 CREATE TABLE permissoes (
@@ -108,7 +80,7 @@ CREATE TABLE papeis_permissoes (
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     instituicao_id INT NOT NULL,
-    
+
     email VARCHAR(150) NOT NULL,
     senha_hash VARCHAR(255) NOT NULL,
     admin_owner TINYINT(1) NOT NULL DEFAULT 0,
@@ -117,11 +89,11 @@ CREATE TABLE usuarios (
     cpf VARCHAR(11) NOT NULL,
     crm VARCHAR(20) NULL,
     especialidade VARCHAR(100) NULL,
-    
+
     ativo BOOLEAN DEFAULT TRUE,
     ultimo_login TIMESTAMP NULL,
     tentativas_login INT DEFAULT 0,
-    
+
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,
 
@@ -135,12 +107,12 @@ CREATE TABLE usuarios (
 
 CREATE TABLE usuarios_papeis (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    instituicao_id int not null,
+    instituicao_id INT NOT NULL,
     usuario_id INT NOT NULL,
     papel_id INT NOT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-	foreign key (instituicao_id) references instituicao(id) on delete cascade,
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (papel_id) REFERENCES papeis(id)
 );
@@ -176,24 +148,11 @@ CREATE TABLE admins (
 
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
-
 );
 
-/*
-	CREATE TABLE medicos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL UNIQUE,
-    instituicao_id INT NOT NULL,
-    cpf VARCHAR(11) NOT NULL UNIQUE,
-    crm VARCHAR(11) NOT NULL UNIQUE,
-    nome VARCHAR(100) NOT NULL,
-    deleted_at TIMESTAMP NULL,
-
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
-
-);
-*/
+-- Não existe uma tabela "medicos" própria: médicos são usuarios com
+-- papel MEDICO, usando as colunas crm/especialidade já presentes em
+-- "usuarios" (ver modelo/MedicoModel.php).
 
 CREATE TABLE pacientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -212,7 +171,19 @@ CREATE TABLE pacientes (
 
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
+);
 
+-- Vínculo médico <-> paciente. medico_id referencia usuarios(id)
+-- (papel MEDICO), não uma tabela "medicos".
+CREATE TABLE medico_paciente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    medico_id INT NOT NULL,
+    paciente_id INT NOT NULL,
+    deleted_at TIMESTAMP NULL,
+    UNIQUE (medico_id, paciente_id),
+
+    FOREIGN KEY (medico_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
 );
 
 CREATE TABLE auditoria_medica (
@@ -223,14 +194,19 @@ CREATE TABLE auditoria_medica (
     descricao TEXT,
     ip VARCHAR(45),
     data_acao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    instituicao_id int not null,
+    instituicao_id INT NOT NULL,
 
-	FOREIGN KEY (instituicao_id) REFERENCES instituicao(id),
+    FOREIGN KEY (instituicao_id) REFERENCES instituicao(id),
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE NO ACTION
+);
 
-);        
-/*
+-- ==========================================================
+-- Anamnese (prontuário). Todas as tabelas abaixo precisam de
+-- deleted_at: controle/AnamneseController.php faz soft-delete e
+-- filtra "deleted_at IS NULL" genericamente para qualquer uma delas.
+-- ==========================================================
+
 CREATE TABLE diagnosticos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     instituicao_id INT NOT NULL,
@@ -261,6 +237,7 @@ CREATE TABLE sintomas (
     problema_intestino BOOLEAN,
     problema_cognitivo VARCHAR(255),
     problema_emocional VARCHAR(255),
+    deleted_at TIMESTAMP NULL,
 
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
@@ -303,6 +280,7 @@ CREATE TABLE qualidade_vida_em (
     edss FLOAT,
     questionario_msqol54 TEXT,
     outras_avaliacoes TEXT,
+    deleted_at TIMESTAMP NULL,
 
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
@@ -320,6 +298,7 @@ CREATE TABLE exame_fisico (
     equilibrio TEXT,
     funcao_visual TEXT,
     outros_exames_fisicos TEXT,
+    deleted_at TIMESTAMP NULL,
 
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
@@ -335,6 +314,7 @@ CREATE TABLE exames_complementares (
     potenciais_evocados_auditivos_de_tronco_encefalico TEXT,
     analise_do_liquido_cefalorraquidiano TEXT,
     outros_exames TEXT,
+    deleted_at TIMESTAMP NULL,
 
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
@@ -350,11 +330,12 @@ CREATE TABLE plano_tratamento (
     reabilitacao TEXT,
     acompanhamento_psicologico TEXT,
     outras_terapias TEXT,
+    deleted_at TIMESTAMP NULL,
 
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE,
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
 );
-*/
+
 CREATE TABLE ia_results (
     id INT AUTO_INCREMENT PRIMARY KEY,
     instituicao_id INT NOT NULL,
@@ -369,18 +350,6 @@ CREATE TABLE ia_results (
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
 );
 
- /*     
-CREATE TABLE medico_paciente (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    medico_id INT,
-    paciente_id INT NOT NULL,
-    UNIQUE (medico_id, paciente_id),
-    deleted_at TIMESTAMP NULL,
-
-    FOREIGN KEY (medico_id) REFERENCES medicos(id)ON DELETE CASCADE,
-    FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
-);
-*/    
 CREATE TABLE mensagens_chat (
     id INT AUTO_INCREMENT PRIMARY KEY,
     instituicao_id INT NOT NULL,
@@ -391,7 +360,7 @@ CREATE TABLE mensagens_chat (
     lida BOOLEAN DEFAULT FALSE,
     deleted_at TIMESTAMP NULL,
 
-	FOREIGN KEY (origem_papel_id) REFERENCES papeis(id),
+    FOREIGN KEY (origem_papel_id) REFERENCES papeis(id),
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id),
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
@@ -402,13 +371,9 @@ CREATE INDEX idx_auditoria_paciente ON auditoria_medica(paciente_id);
 CREATE INDEX idx_refresh_usuario ON refresh_tokens(usuario_id);
 CREATE INDEX idx_usuarios_deleted ON usuarios(deleted_at);
 
-ALTER TABLE papeis DROP INDEX nome;
-ALTER TABLE papeis
-ADD UNIQUE (nome, instituicao_id);
-
-## TEST
-
-USE TCC25;
+-- ==========================================================
+-- Permissões
+-- ==========================================================
 
 INSERT INTO permissoes (nome) VALUES
 ('usuario.listar'),
@@ -429,6 +394,21 @@ INSERT INTO permissoes (nome) VALUES
 ('admin.editar'),
 ('admin.deletar'),
 
+('medico.listar'),
+('medico.visualizar'),
+('medico.criar'),
+('medico.editar'),
+('medico.deletar'),
+('medico.vincular_paciente'),
+('medico.listar_pacientes'),
+('medico.desvincular_paciente'),
+
+('paciente.listar'),
+('paciente.visualizar'),
+('paciente.criar'),
+('paciente.editar'),
+('paciente.deletar'),
+
 ('ia.criar'),
 ('ia.listar'),
 ('ia.deletar'),
@@ -441,99 +421,95 @@ INSERT INTO permissoes (nome) VALUES
 
 ('auditoria.listar'),
 ('auditoria.criar'),
-/*
+
 ('anamnese.listar'),
 ('anamnese.criar'),
 ('anamnese.editar'),
 ('anamnese.deletar'),
-*/
+
 ('instituicao.visualizar'),
 ('instituicao.criar'),
 ('instituicao.editar'),
 ('instituicao.deletar'),
 
 ('licenca.visualizar'),
-
 ('licenca.criar'),
-
 ('licenca.ativar'),
 ('licenca.renovar'),
 
 ('plano.alterar'),
 ('plano.visualizar');
 
-/*
-INSERT INTO usuarios (email, senha_hash)
+INSERT INTO planos
+(nome, descricao, limite_usuarios, limite_papeis, limite_ia, valor, duracao_dias)
 VALUES
-('admin@teste.com', '$2y$10$md.r9c9rnGG9XgMUm3xApO9t94g1TsTdK8IcQ1S3q1g9pbTR5wlzO'),
-('medico@teste.com', '$2y$10$md.r9c9rnGG9XgMUm3xApO9t94g1TsTdK8IcQ1S3q1g9pbTR5wlzO'),
-('paciente@teste.com', '$2y$10$md.r9c9rnGG9XgMUm3xApO9t94g1TsTdK8IcQ1S3q1g9pbTR5wlzO');
+('Básico', 'Plano ideal para clínicas pequenas', 5, 1, 50, 199.90, 30),
+('Profissional', 'Plano intermediário', 15, 3, 300, 499.90, 30),
+('Enterprise', 'Ilimitado para grandes instituições', NULL, NULL, NULL, 1299.90, 30);
 
-#########################################
+-- ==========================================================
+-- Dados de exemplo para desenvolvimento local
+-- Login: admin@teste.com / medico@teste.com / paciente@teste.com
+-- Senha (todos): "senha123"
+-- ==========================================================
 
--- =========================
--- INSTITUICAO
--- =========================
 INSERT INTO instituicao (nome, cep, logradouro, cidade, bairro, cnpj, tipo, telefone, email, site, nome_responsavel, telefone_responsavel) VALUES
-('Hospital Teste', '12200-000', 'Rua A', 'São José', 'Centro', '12345678000199', 'privado', '(12)99999-9999', 'contato@hospital.com', 'https://hospital.com', 'Diretor Teste', '(12)98888-8888'),
-('Clinica Saúde', '12210-111', 'Rua B', 'São José', 'Vila Nova', '12345678000299', 'filantropico', '(12)98888-7777', 'contato@clinica.com', 'https://clinica.com', 'Dr. Saúde', '(12)97777-7777'),
-('Hospital Universitário', '12220-222', 'Rua C', 'São José', 'Jardim', '12345678000399', 'publico', '(12)96666-6666', 'contato@universitario.com', 'https://universitario.com', 'Prof. Diretor', '(12)95555-5555');
+('Hospital Teste', '12200-000', 'Rua A', 'São José', 'Centro', '12345678000199', 'privado', '(12)99999-9999', 'contato@hospital.com', 'https://hospital.com', 'Diretor Teste', '(12)98888-8888');
+
+INSERT INTO licencas (token, instituicao_id, status, usado, expira_em, plano_id) VALUES
+(SHA2(CONCAT('dev-license-', UUID()), 256), 1, 'ativa', TRUE, DATE_ADD(NOW(), INTERVAL 365 DAY), 3);
 
 INSERT INTO papeis (nome, descricao, instituicao_id) VALUES
 ('ADMIN', 'Administrador do sistema', 1),
 ('MEDICO', 'Médico responsável', 1),
 ('PACIENTE', 'Paciente cadastrado', 1);
 
+-- ADMIN: todas as permissões
+INSERT INTO papeis_permissoes (papel_id, permissao_id)
+SELECT (SELECT id FROM papeis WHERE nome = 'ADMIN' AND instituicao_id = 1), id FROM permissoes;
+
+-- MEDICO: gestão de pacientes, prontuário, IA e chat
+INSERT INTO papeis_permissoes (papel_id, permissao_id)
+SELECT (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1), id FROM permissoes
+WHERE nome IN (
+    'medico.listar','medico.visualizar','medico.editar',
+    'medico.vincular_paciente','medico.listar_pacientes','medico.desvincular_paciente',
+    'paciente.listar','paciente.visualizar','paciente.criar','paciente.editar',
+    'anamnese.listar','anamnese.criar','anamnese.editar',
+    'ia.criar','ia.listar','ia.visualizar_imagem',
+    'chat.enviar','chat.listar','chat.marcar_lida','chat.visualizar'
+);
+
+-- PACIENTE: acesso restrito aos próprios dados
+INSERT INTO papeis_permissoes (papel_id, permissao_id)
+SELECT (SELECT id FROM papeis WHERE nome = 'PACIENTE' AND instituicao_id = 1), id FROM permissoes
+WHERE nome IN (
+    'paciente.visualizar','anamnese.listar',
+    'ia.listar','ia.visualizar_imagem',
+    'chat.enviar','chat.listar','chat.visualizar'
+);
+
+-- Usuários de teste (senha "senha123" para os três, hash bcrypt)
+INSERT INTO usuarios (instituicao_id, email, senha_hash, admin_owner, nome, cpf) VALUES
+(1, 'admin@teste.com', '$2y$10$X/afuQ0lkshdUCMYu39EYuDaHOga5PpLBzPeG8oD./2Ziq9ybFfUu', 1, 'Admin Teste', '11111111111');
+
+INSERT INTO usuarios (instituicao_id, email, senha_hash, admin_owner, nome, cpf, crm, especialidade) VALUES
+(1, 'medico@teste.com', '$2y$10$X/afuQ0lkshdUCMYu39EYuDaHOga5PpLBzPeG8oD./2Ziq9ybFfUu', 0, 'Dr. Médico Teste', '22222222222', 'SP123456', 'Neurologia');
+
+INSERT INTO usuarios (instituicao_id, email, senha_hash, admin_owner, nome, cpf) VALUES
+(1, 'paciente@teste.com', '$2y$10$X/afuQ0lkshdUCMYu39EYuDaHOga5PpLBzPeG8oD./2Ziq9ybFfUu', 0, 'Paciente Teste', '33333333333');
+
+INSERT INTO usuarios_papeis (instituicao_id, usuario_id, papel_id) VALUES
+(1, (SELECT id FROM usuarios WHERE email = 'admin@teste.com'), (SELECT id FROM papeis WHERE nome = 'ADMIN' AND instituicao_id = 1)),
+(1, (SELECT id FROM usuarios WHERE email = 'medico@teste.com'), (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1)),
+(1, (SELECT id FROM usuarios WHERE email = 'paciente@teste.com'), (SELECT id FROM papeis WHERE nome = 'PACIENTE' AND instituicao_id = 1));
 
 INSERT INTO pacientes (usuario_id, instituicao_id, cpf, nome, sexo, telefone) VALUES
-(3, 1, '98765432100', 'Paciente A', 'M', '(12)98888-1111');
+((SELECT id FROM usuarios WHERE email = 'paciente@teste.com'), 1, '98765432100', 'Paciente Teste', 'M', '(12)98888-1111');
+
+INSERT INTO medico_paciente (medico_id, paciente_id) VALUES
+((SELECT id FROM usuarios WHERE email = 'medico@teste.com'), (SELECT id FROM pacientes WHERE cpf = '98765432100'));
 
 INSERT INTO mensagens_chat (instituicao_id, usuario_id, mensagem, origem_papel_id) VALUES
-(1, 2, 'Olá, paciente A!', 2),
-(1, 2, 'Agendamento confirmado.', 2),
-(1, 2, 'Lembrete de consulta.', 2);
-##############################################################################################
-
--- =========================
--- ADMIN (total)
--- =========================
-INSERT INTO papeis_permissoes (papel_id, permissao_id) VALUES
-(1, 1),(1, 2),(1, 3),(1, 4),(1, 5), -- usuarios
-(1, 6),(1, 7),(1, 8),(1, 9),        -- papeis/permissoes
-(1, 10),(1, 11),(1, 12),(1, 13),(1, 14), -- admins
-(1, 15),(1, 16),(1, 17),(1, 18),(1, 19),(1, 20),(1, 21),(1, 22), -- medicos
-(1, 23),(1, 24),(1, 25),(1, 26),(1, 27), -- pacientes
-(1, 28),(1, 29),(1, 30),(1, 31),         -- IA
-(1, 32),(1, 33),(1, 34),(1, 35),         -- Chat
-(1, 36),(1, 37),                          -- Auditoria
-(1, 38),(1, 39),(1, 40),(1, 41);         -- Anamnese
-
--- =========================
--- MÉDICO (relevante)
--- =========================
-INSERT INTO papeis_permissoes (papel_id, permissao_id) VALUES
-(2, 15),(2, 16),(2, 17),(2, 18),(2, 19), -- médicos (listar, criar, editar)
-(2, 20),(2, 21),(2, 22),                  -- vincular/desvincular paciente
-(2, 23),(2, 24),(2, 26),                  -- pacientes (listar, visualizar, editar)
-(2, 28),(2, 29),(2, 31),                  -- IA (criar, listar, visualizar_imagem)
-(2, 32),(2, 33),(2, 34),(2, 35),          -- Chat
-(2, 38),(2, 39),(2, 40);                  -- Anamnese (listar, criar, editar)
-
--- =========================
--- PACIENTE (limitado)
--- =========================
-INSERT INTO papeis_permissoes (papel_id, permissao_id) VALUES
-(3, 24), -- paciente.visualizar
-(3, 32),(3, 33),(3, 35), -- chat.enviar, chat.listar, chat.visualizar
-(3, 31), -- IA.visualizar_imagem
-(3, 38); -- anamnese.listar
-
-##############################################################################################
-INSERT INTO usuarios_papeis (usuario_id, papel_id) VALUES
-(1, 1), -- admin
-(2, 2), -- medico
-(3, 3); -- paciente
-*/
-
-SHOW CREATE TABLE pacientes;
-#drop database tcc25;
+(1, (SELECT id FROM usuarios WHERE email = 'medico@teste.com'), 'Olá, paciente! Como você está se sentindo hoje?', (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1)),
+(1, (SELECT id FROM usuarios WHERE email = 'medico@teste.com'), 'Agendamento confirmado para a próxima semana.', (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1));
