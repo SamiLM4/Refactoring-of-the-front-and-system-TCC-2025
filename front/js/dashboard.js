@@ -388,11 +388,6 @@ async function initCharts() {
     isChartsLoading = false;
 }
 
-function logout() {
-    localStorage.clear();
-    location.href = "../index.html";
-}
-
 function updateDate() {
     const el = document.getElementById('currentDate');
 

@@ -35,7 +35,6 @@ O MedInsight AI atende instituições de saúde (hospitais, clínicas) que preci
 - Autenticação por JWT ([firebase/php-jwt](https://github.com/firebase/php-jwt)), com controle de permissões por rota
 - [vlucas/phpdotenv](https://github.com/vlucas/phpdotenv) para variáveis de ambiente
 - [PHPMailer](https://github.com/PHPMailer/PHPMailer) para envio de e-mails
-- Geração de PDF via [FPDF](http://www.fpdf.org/)
 - Integração com a API da OpenAI para o módulo de diagnóstico por IA
 
 **Front-end**
@@ -54,7 +53,6 @@ O MedInsight AI atende instituições de saúde (hospitais, clínicas) que preci
 ├── services/          # Serviços auxiliares (ex.: envio de e-mail)
 ├── front/             # Front-end (HTML/CSS/JS)
 ├── banco/             # Script SQL de criação do banco
-├── fpdf/              # Biblioteca de geração de PDF
 ├── index.php          # Front controller — bootstrap, CORS, rotas da API
 └── index.html          # Landing page
 ```
@@ -119,7 +117,7 @@ Acesse `login.html` para autenticar ou `register_institution.html` para cadastra
 - Isolamento multi-tenant: toda consulta a dados de paciente/médico valida `instituicao_id`.
 - Pacientes só acessam os próprios dados (checagem explícita no front controller).
 
-> ⚠️ **Atenção:** o segredo usado para assinar os tokens JWT está hard-coded em [config/jwt.php](config/jwt.php) e versionado no repositório. Antes de qualquer uso além de desenvolvimento local, mova-o para uma variável de ambiente (`JWT_SECRET` no `.env`) e gere um novo segredo — o valor atual deve ser considerado comprometido por estar público no histórico do Git.
+- O segredo dos tokens JWT vem da variável `JWT_SECRET` no `.env` (com um valor de fallback apenas para não quebrar ambientes antigos sem essa variável configurada). Gere um segredo próprio antes de qualquer uso além de desenvolvimento local.
 
 ---
 

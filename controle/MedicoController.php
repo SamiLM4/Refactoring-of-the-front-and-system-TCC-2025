@@ -130,7 +130,18 @@ class MedicoController extends BaseController {
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
         if (!isset($data['paciente_id'])) $this->errorResponse("ID do paciente é obrigatório");
-        
+
+        if (!$this->model->getById($medicoId, $usuario['instituicao_id'])) {
+            $this->errorResponse("Médico não encontrado", 404);
+        }
+
+        $paciente = $this->model->query(
+            "SELECT id FROM pacientes WHERE id = ? AND instituicao_id = ?",
+            [$data['paciente_id'], $usuario['instituicao_id']],
+            "ii"
+        )->fetch_assoc();
+        if (!$paciente) $this->errorResponse("Paciente não encontrado", 404);
+
         $sql = "INSERT INTO medico_paciente (medico_id, paciente_id) VALUES (?, ?)";
         $this->model->query($sql, [$medicoId, $data['paciente_id']], "ii");
         $this->jsonResponse(["msg" => "Paciente vinculado com sucesso"]);
@@ -138,8 +149,15 @@ class MedicoController extends BaseController {
 
     public function detachPaciente($medicoId, $pacienteId) {
         $usuario = $GLOBALS['usuario'];
-        $sql = "DELETE FROM medico_paciente WHERE medico_id = ? AND paciente_id = ?";
-        $this->model->query($sql, [$medicoId, $pacienteId], "ii");
+
+        if (!$this->model->getById($medicoId, $usuario['instituicao_id'])) {
+            $this->errorResponse("Médico não encontrado", 404);
+        }
+
+        $sql = "DELETE mp FROM medico_paciente mp
+                JOIN pacientes p ON p.id = mp.paciente_id
+                WHERE mp.medico_id = ? AND mp.paciente_id = ? AND p.instituicao_id = ?";
+        $this->model->query($sql, [$medicoId, $pacienteId, $usuario['instituicao_id']], "iii");
         $this->jsonResponse(["msg" => "Paciente desvinculado com sucesso"]);
     }
 }
