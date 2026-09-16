@@ -11,25 +11,55 @@ class AuditoriaController extends BaseController {
         $banco = new Banco();
         $conn = $banco->getConexao();
 
+        $pagina = max(1, (int)($_GET['pagina'] ?? 1));
+        $porPagina = (int)($_GET['por_pagina'] ?? 20);
+        $porPagina = max(1, min($porPagina, 100));
+        $offset = ($pagina - 1) * $porPagina;
+
+        $busca = trim($_GET['busca'] ?? '');
+        $filtro = "";
+        $params = [$instituicaoId];
+        $types = "i";
+
+        if ($busca !== '') {
+            $filtro = " AND (a.acao LIKE ? OR a.descricao LIKE ? OR u.email LIKE ? OR p.nome LIKE ?) ";
+            $like = "%{$busca}%";
+            array_push($params, $like, $like, $like, $like);
+            $types .= "ssss";
+        }
+
         // Query unificada de Auditoria (Geral + Pacientes)
+        $sqlCount = "
+            SELECT COUNT(*) as total
+            FROM auditoria_medica a
+            INNER JOIN usuarios u ON a.usuario_id = u.id
+            LEFT JOIN pacientes p ON a.paciente_id = p.id
+            WHERE a.instituicao_id = ? {$filtro}
+        ";
+        $stmt = $conn->prepare($sqlCount);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $total = (int)($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+
         $sql = "
-            SELECT 
-                a.id, 
-                a.acao, 
-                a.descricao, 
-                a.ip, 
+            SELECT
+                a.id,
+                a.acao,
+                a.descricao,
+                a.ip,
                 a.data_acao,
                 u.email,
                 p.nome as paciente_nome
             FROM auditoria_medica a
             INNER JOIN usuarios u ON a.usuario_id = u.id
             LEFT JOIN pacientes p ON a.paciente_id = p.id
-            WHERE a.instituicao_id = ?
+            WHERE a.instituicao_id = ? {$filtro}
             ORDER BY a.data_acao DESC
+            LIMIT ? OFFSET ?
         ";
-
+        $paramsPagina = array_merge($params, [$porPagina, $offset]);
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $instituicaoId);
+        $stmt->bind_param($types . "ii", ...$paramsPagina);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -38,7 +68,15 @@ class AuditoriaController extends BaseController {
             $dados[] = $row;
         }
 
-        $this->jsonResponse($dados);
+        $this->jsonResponse([
+            "registros" => $dados,
+            "paginacao" => [
+                "pagina" => $pagina,
+                "por_pagina" => $porPagina,
+                "total" => $total,
+                "total_paginas" => (int)ceil($total / $porPagina)
+            ]
+        ]);
     }
 
     public function listByPaciente($pacienteId) {
