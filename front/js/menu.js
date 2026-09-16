@@ -1,1 +1,0 @@
-// Este arquivo foi descontinuado em favor do dashboard.js para manter o sistema centralizado.

@@ -59,7 +59,7 @@ class MensagemController extends BaseController {
 
         $origemPapelId = $usuario['papeis'][0]['id'] ?? null;
         if (!$origemPapelId) {
-            $this->errorResponse("Usuário sem papel definido para enviar mensagem");
+            $this->errorResponse("Usuário sem papel atribuído não pode enviar mensagens", 403);
         }
 
         $msgId = $this->model->create([

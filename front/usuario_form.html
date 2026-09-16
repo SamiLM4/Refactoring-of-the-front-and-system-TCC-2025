@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%A9%BA%3C/text%3E%3C/svg%3E">
+    <meta name="description" content="Criar ou editar um usuário do sistema.">
     <title>Gerenciar Usuário - MedInsight AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/modern.css">
@@ -28,7 +30,7 @@
                 <input type="text" name="cpf" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
             </div>
             <div id="passwordField">
-                <label style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Senha (deixe em branco para manter)</label>
+                <label id="senhaLabel" style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Senha</label>
                 <input type="password" name="senha" required style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
             </div>
             <div>
@@ -93,10 +95,8 @@
         </form>
     </div>
 
+    <script src="js/auth.js"></script>
     <script>
-        const API_URL = "../api";
-        const token = localStorage.getItem("access_token");
-
         let roles = [];
 
         async function loadRoles() {
@@ -153,6 +153,7 @@
             document.getElementById('formTitle').innerText = "Editar Usuário";
             document.getElementById('submitBtn').innerText = "Salvar Alterações";
             document.getElementsByName('senha')[0].removeAttribute('required');
+            document.getElementById('senhaLabel').innerText = "Senha (deixe em branco para manter a atual)";
             
             try {
                 const res = await fetch(`${API_URL}/usuarios/${userId}`, {

@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%A9%BA%3C/text%3E%3C/svg%3E">
+    <meta name="description" content="Comunicação direta entre profissionais e pacientes.">
     <title>Chat Médico - MedInsight AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/modern.css">
@@ -109,37 +111,21 @@
             </header>
 
             <div class="chat-container">
-                <div class="chat-list">
-                    <div class="chat-item active">
-                        <div style="font-weight: 600;">Dr. Carlos Silveira</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Surgindo dúvida no prontuário #12...
-                        </div>
-                    </div>
-                    <div class="chat-item">
-                        <div style="font-weight: 600;">Dra. Amanda Lima</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Exame de sangue disponível</div>
-                    </div>
-                    <div class="chat-item">
-                        <div style="font-weight: 600;">Enf. Marcos Reus</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Paciente do 203 estável</div>
+                <div class="chat-list" id="chat-list">
+                    <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                        Carregando contatos...
                     </div>
                 </div>
 
                 <div class="chat-main">
                     <div class="chat-messages" id="chat-box">
-                        <div class="message msg-received">
-                            Olá, tudo bem? Vi o último diagnóstico da IA para o paciente João Silva. Podemos discutir a
-                            conduta?
-                        </div>
-                        <div class="message msg-sent">
-                            Com certeza, Dr. Carlos. O que mais te chamou a atenção?
-                        </div>
-                        <div class="message msg-received">
-                            A correlação com J06.9 parece correta, mas a febre persistente me preocupa.
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); opacity: 0.6;">
+                            <span style="font-size: 2rem; margin-bottom: 1rem;">💬</span>
+                            <p>Selecione um contato ao lado para iniciar uma conversa.</p>
                         </div>
                     </div>
                     <div class="chat-input">
-                        <input type="text" id="msg-input" placeholder="Digite sua mensagem..."
+                        <input type="text" id="msg-input" placeholder="Digite sua mensagem..." disabled
                             style="flex: 1; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 0.5rem; color: white;">
                         <button onclick="enviarMensagem()" class="btn btn-primary">Enviar</button>
                     </div>
@@ -173,9 +159,18 @@
                 
                 list.innerHTML = "";
 
-                usuarios.forEach(u => {
-                    if (u.email === myEmail) return;
+                const contatos = usuarios.filter(u => u.email !== myEmail);
 
+                if (contatos.length === 0) {
+                    list.innerHTML = `
+                        <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                            Nenhum contato disponível ainda.
+                        </div>
+                    `;
+                    return;
+                }
+
+                contatos.forEach(u => {
                     const div = document.createElement('div');
                     div.className = `chat-item ${currentChatUserId === u.id ? 'active' : ''}`;
                     div.id = `contact-${u.id}`;
@@ -210,10 +205,13 @@
             lastMsgId = 0;
             lastRenderedIds = "";
 
+            const input = document.getElementById('msg-input');
+            input.disabled = false;
+
             document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             const selectedItem = document.getElementById(`contact-${userId}`);
             if (selectedItem) selectedItem.classList.add('active');
-            
+
             document.getElementById('chat-box').innerHTML = `
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); opacity: 0.6;">
                     <span style="font-size: 2rem; margin-bottom: 1rem;">💬</span>

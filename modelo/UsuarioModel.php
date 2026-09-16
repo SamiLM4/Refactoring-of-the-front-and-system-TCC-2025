@@ -122,9 +122,49 @@ class UsuarioModel extends BaseModel {
         return $this->query($sql, [$usuarioId, $tokenHash, $expiraEm], "iss");
     }
 
-    public function revokeRefreshToken($token) {
+    public function revokeRefreshToken($tokenHash) {
         $sql = "UPDATE refresh_tokens SET revogado = 1 WHERE token = ?";
-        return $this->query($sql, [$token], "s");
+        return $this->query($sql, [$tokenHash], "s");
+    }
+
+    public function getByRefreshTokenHash($tokenHash) {
+        $sql = "
+        SELECT
+            u.id,
+            u.email,
+            u.instituicao_id,
+            u.admin_owner,
+            u.nome,
+            pl.nome AS tipo_licenca,
+            CASE
+                WHEN l.status = 'ativa'
+                 AND l.usado = TRUE
+                 AND (l.expira_em IS NULL OR l.expira_em > NOW())
+                THEN TRUE
+                ELSE FALSE
+            END AS licenca_ativa
+
+        FROM refresh_tokens rt
+        JOIN usuarios u ON u.id = rt.usuario_id
+
+        LEFT JOIN licencas l
+            ON l.instituicao_id = u.instituicao_id
+            AND l.status = 'ativa'
+
+        LEFT JOIN planos pl
+            ON pl.id = l.plano_id
+
+        WHERE rt.token = ?
+        AND rt.revogado = 0
+        AND rt.expira_em > NOW()
+        AND u.ativo = 1
+        AND u.deleted_at IS NULL
+
+        LIMIT 1;
+        ";
+
+        $result = $this->query($sql, [$tokenHash], "s");
+        return $result->fetch_assoc();
     }
 
     public function createAdminRecord($usuarioId, $instituicaoId, $nome) {

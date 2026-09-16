@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . "/BaseController.php";
 require_once __DIR__ . "/../modelo/InstituicaoModel.php";
 require_once __DIR__ . "/../modelo/LicencaModel.php";
 require_once __DIR__ . "/../modelo/UsuarioModel.php";
@@ -16,6 +17,11 @@ class InstituicaoController extends BaseController {
     }
 
     public function show($id) {
+        $usuario = $GLOBALS['usuario'];
+        if ((int)$id !== (int)$usuario['instituicao_id']) {
+            $this->errorResponse("Acesso negado", 403);
+        }
+
         $dado = $this->model->getById($id);
         if (!$dado) {
             $this->errorResponse("Instituição não encontrada", 404);
@@ -38,7 +44,10 @@ class InstituicaoController extends BaseController {
     public function update($id = null) {
         $usuario = $GLOBALS['usuario'];
         $id = $id ?? $usuario['instituicao_id']; // If no ID, update current user's institution
-        
+        if ((int)$id !== (int)$usuario['instituicao_id']) {
+            $this->errorResponse("Acesso negado", 403);
+        }
+
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
         
@@ -56,7 +65,13 @@ class InstituicaoController extends BaseController {
 
         if (!$data) $this->errorResponse("Dados inválidos");
 
-        // Transaction handling would be better here, but for simplicity in this demo:
+        // Todas as escritas (instituição, usuário admin, papel, licença) precisam
+        // acontecer na mesma transação/conexão, senão uma falha no meio deixa
+        // dados órfãos e o FOR UPDATE do token de licença não impede uso duplicado.
+        $this->licencaModel->setDb($this->usuarioModel->getDb());
+        $this->model->setDb($this->usuarioModel->getDb());
+        $this->usuarioModel->beginTransaction();
+
         try {
             // 1. Validate Token
             $licenca = $this->licencaModel->getByToken($data['token']);
@@ -101,9 +116,11 @@ class InstituicaoController extends BaseController {
             // 6. Use License
             $this->licencaModel->markAsUsed($licenca['id'], $instituicaoId);
 
+            $this->usuarioModel->commit();
             $this->jsonResponse(["msg" => "Registro concluído com sucesso", "instituicao_id" => $instituicaoId], true, 201);
 
         } catch (Exception $e) {
+            $this->usuarioModel->rollback();
             $this->errorResponse($e->getMessage());
         }
     }

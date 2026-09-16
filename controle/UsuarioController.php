@@ -65,7 +65,7 @@ class UsuarioController extends BaseController
                 'senha_hash' => password_hash($data['senha'], PASSWORD_DEFAULT),
                 'instituicao_id' => $instituicaoId,
                 'nome' => $data['nome'] ?? null,
-                'cpf' => $data['cpf'] ?? null
+                'cpf' => !empty($data['cpf']) ? $data['cpf'] : null
             ]);
 
             // 2. Assign Role
@@ -235,7 +235,7 @@ class UsuarioController extends BaseController
             if (isset($data['cpf'])) {
                 $updateData[] = 'cpf = ?';
                 $updateTypes .= 's';
-                $updateValues[] = $data['cpf'];
+                $updateValues[] = !empty($data['cpf']) ? $data['cpf'] : null;
             }
             // Note: crm and especialidade are typically for Medico, not directly on Usuario.
             // If these are intended to update the main user table, ensure the schema supports it.

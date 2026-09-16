@@ -14,12 +14,7 @@ require_once __DIR__ . "/vendor/autoload.php";
 $dotenv = Dotenv\Dotenv::createUnsafeImmutable(__DIR__);
 $dotenv->load();
 
-
 define('BASE_PATH', __DIR__);
-
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 // Simple Autoloader for MVC
 spl_autoload_register(function ($class) {
@@ -73,14 +68,7 @@ function proteger(array $permissoes, $handler, bool $exigirLicenca = false)
             return $controller->$method(...$params);
         }
 
-        if (is_callable($handler)) {
-            return $handler(...$params);
-        }
-
-        // Available to legacy procedural endpoints (anamnese endpoints)
-        $pacienteId = $params[0] ?? null;
-
-        require_once __DIR__ . "/" . $handler;
+        return $handler(...$params);
     };
 }
 
