@@ -103,13 +103,42 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const pacienteId = urlParams.get('id');
+        let podeEditar = true;
 
-        if (pacienteId) {
-            document.getElementById('form-title').innerText = "Editar Paciente";
-            document.getElementById('senha').placeholder = "Deixe em branco para manter";
-            loadPaciente().catch(err => console.error(err));
+        async function init() {
+            if (pacienteId) {
+                const usuarioLogado = await carregarUsuario();
+                podeEditar = !!(usuarioLogado && usuarioLogado.admin_owner) || temPermissao('paciente', 'editar');
+
+                document.getElementById('senha').placeholder = "Deixe em branco para manter";
+
+                try {
+                    await loadPaciente();
+                } catch (err) {
+                    console.error(err);
+                }
+
+                if (!podeEditar) {
+                    document.getElementById('form-title').innerText = "Minha Ficha";
+                    aplicarModoSomenteLeitura();
+                } else {
+                    document.getElementById('form-title').innerText = "Editar Paciente";
+                }
+            }
         }
 
+        function aplicarModoSomenteLeitura() {
+            const form = document.getElementById('pacienteForm');
+            form.querySelectorAll('input, select').forEach(el => el.disabled = true);
+
+            const passwordContainer = document.getElementById('passwordContainer');
+            if (passwordContainer) passwordContainer.style.display = 'none';
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.style.display = 'none';
+        }
+
+        init();
 
         async function loadPaciente() {
             const res = await fetch(`${API_URL}/pacientes/${pacienteId}`, {
@@ -131,6 +160,8 @@
 
         document.getElementById('pacienteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!podeEditar) return;
+
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
 

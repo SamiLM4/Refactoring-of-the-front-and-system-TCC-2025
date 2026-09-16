@@ -385,6 +385,7 @@ CREATE TABLE mensagens_chat (
     id INT AUTO_INCREMENT PRIMARY KEY,
     instituicao_id INT NOT NULL,
     usuario_id INT NOT NULL,
+    para_usuario_id INT NULL,
     mensagem TEXT NOT NULL,
     origem_papel_id INT NOT NULL,
     data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -393,7 +394,8 @@ CREATE TABLE mensagens_chat (
 
 	FOREIGN KEY (origem_papel_id) REFERENCES papeis(id),
     FOREIGN KEY (instituicao_id) REFERENCES instituicao(id),
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (para_usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE INDEX idx_usuarios_email ON usuarios(email);
