@@ -1,8 +1,5 @@
 <?php
 
-require_once __DIR__ . "/DashboardController.php"; // This will be handled by the autoloader anyway actually, but good for clarity if needed. 
-// Wait, index.php has a spl_autoload_register now.
-
 require_once __DIR__ . "/BaseController.php";
 require_once __DIR__ . "/../modelo/DashboardModel.php";
 
