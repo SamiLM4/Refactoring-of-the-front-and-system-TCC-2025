@@ -74,6 +74,11 @@ class UsuarioModel extends BaseModel {
         return $result->fetch_assoc();
     }
 
+    public function grantAllPermissions($papelId) {
+        $sql = "INSERT INTO papeis_permissoes (papel_id, permissao_id) SELECT ?, id FROM permissoes";
+        $this->query($sql, [$papelId], "i");
+    }
+
     public function beginTransaction() {
         $this->db->begin_transaction();
     }

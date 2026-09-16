@@ -57,7 +57,8 @@ class MensagemController extends BaseController {
             $this->errorResponse("Mensagem e destinatário são obrigatórios");
         }
 
-        if (empty($usuario['papeis'])) {
+        $origemPapelId = $usuario['papeis'][0]['id'] ?? null;
+        if (!$origemPapelId) {
             $this->errorResponse("Usuário sem papel atribuído não pode enviar mensagens", 403);
         }
 
@@ -66,7 +67,7 @@ class MensagemController extends BaseController {
             "usuario_id" => $usuario['id'],
             "para_usuario_id" => (int)$input['para_usuario_id'],
             "mensagem" => $input['mensagem'],
-            "origem_papel_id" => (int)$usuario['papeis'][0]['id'],
+            "origem_papel_id" => $origemPapelId,
             "data_envio" => date('Y-m-d H:i:s')
         ]);
 

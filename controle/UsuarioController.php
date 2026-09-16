@@ -328,6 +328,10 @@ class UsuarioController extends BaseController
         $usuarioLogado = $GLOBALS['usuario'];
         $instituicaoId = $usuarioLogado['instituicao_id'];
 
+        if ((int)$id === (int)$usuarioLogado['id']) {
+            $this->errorResponse("Você não pode excluir sua própria conta", 403);
+        }
+
         $this->model->beginTransaction();
         try {
             // 1. Soft delete the user

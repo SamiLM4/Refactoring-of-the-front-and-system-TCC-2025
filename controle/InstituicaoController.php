@@ -108,8 +108,9 @@ class InstituicaoController extends BaseController {
                 "admin_owner" => 1
             ]);
 
-            // 5. Create Role and Assign
+            // 5. Create Role, grant full access and assign to the new admin
             $papelId = $this->usuarioModel->createRole("ADMIN", "Administrador Principal", $instituicaoId);
+            $this->usuarioModel->grantAllPermissions($papelId);
             $this->usuarioModel->assignRole($usuarioId, $papelId, $instituicaoId);
 
             // 6. Use License
