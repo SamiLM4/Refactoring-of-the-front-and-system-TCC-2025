@@ -512,6 +512,6 @@ INSERT INTO pacientes (usuario_id, instituicao_id, cpf, nome, sexo, telefone) VA
 INSERT INTO medico_paciente (medico_id, paciente_id) VALUES
 ((SELECT id FROM usuarios WHERE email = 'medico@teste.com'), (SELECT id FROM pacientes WHERE cpf = '98765432100'));
 
-INSERT INTO mensagens_chat (instituicao_id, usuario_id, mensagem, origem_papel_id) VALUES
-(1, (SELECT id FROM usuarios WHERE email = 'medico@teste.com'), 'Olá, paciente! Como você está se sentindo hoje?', (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1)),
-(1, (SELECT id FROM usuarios WHERE email = 'medico@teste.com'), 'Agendamento confirmado para a próxima semana.', (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1));
+INSERT INTO mensagens_chat (instituicao_id, usuario_id, para_usuario_id, mensagem, origem_papel_id) VALUES
+(1, (SELECT id FROM usuarios WHERE email = 'medico@teste.com'), (SELECT id FROM usuarios WHERE email = 'paciente@teste.com'), 'Olá, paciente! Como você está se sentindo hoje?', (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1)),
+(1, (SELECT id FROM usuarios WHERE email = 'medico@teste.com'), (SELECT id FROM usuarios WHERE email = 'paciente@teste.com'), 'Agendamento confirmado para a próxima semana.', (SELECT id FROM papeis WHERE nome = 'MEDICO' AND instituicao_id = 1));
