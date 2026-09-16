@@ -179,7 +179,7 @@ function authMiddleware(
            ADMIN OWNER IGNORA VALIDAÇÃO DE PERMISSÕES
         ===================================================== */
 
-        if (!((int)$usuario['admin_owner'] === 1)) {
+        if (empty($usuario['admin_owner'])) {
 
             if (!empty($permissoesNecessarias)) {
 
